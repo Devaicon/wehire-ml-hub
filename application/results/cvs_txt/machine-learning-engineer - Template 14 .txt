@@ -1,0 +1,59 @@
+First Last
+Machine Learning Engineer
+Phoenix, Ariizona  •  +1-234-456-789  •  professionalemail@resumeworded.com  •  linkedin.com/in/username
+Machine learning engineer with 10 years of experience implementing statistical machine learning solutions and
+demand forecasting models to improve forecast accuracy. Key achievement: optimized personalization algorithms
+for 25+ applications with 372K users.
+RELEVANT WORK EXPERIENCE
+_______________________________________________________________________________________________________________
+Resume Worded, New York, NY
+2015 – Present
+Machine Learning Engineer
+●
+Tracked the health of 15+ robots using React/Redux with NodeJS backend and Python scripts, which
+collected 100TB of data from its sensors.
+●
+Designed a deep learning model to detect and classify anomalies in the manufacturing process of 34+
+industrial robots, reducing 83% of their monthly downtime.
+●
+Researched TensorFlow LSTM networks for speech recognition, OpenCV object tracking algorithms, and
+11+ new technologies; enhanced 74% of a dancing robot's performance.
+●
+Conceived and created a machine learning algorithm that detects deviant behavior in robots using SIFT,
+HOG, and 20+ other computer vision methods.
+Growthsi, San Francisco, CA
+2013 – 2015
+Automation Engineer
+●
+Enhanced an automatic data processing machine performance by analyzing, testing, and debugging 2500+
+lines of code.
+●
+Developed work instructions and algorithms for 30+ newly installed hardware, converting Growthsi
+production floor from manual to 100% computer-controlled.
+●
+Established computerized process efficiency standards and implemented procedural controls; reduced
+overhead for 300+ clients and increased their annual sales profits by $150K YoY.
+●
+Created a computer program to monitor the performance of 45+ robotic arms and coordinate their
+functions based on the diagnostics from the computer.
+Resume Worded Exciting Company, San Francisco, CA
+2011 – 2013
+Computer Systems Analyst
+●
+Examined desktop usage patterns based on analysis of 10 TB of data from call center reports; created a
+solution that boosted employee productivity by 78%.
+●
+Identified and resolved issues of network performance degradation, increasing system availability from 48%
+to 97% in the first month.
+●
+Designed algorithms to enhance data throughput between 50K mobile users and base stations while
+working on the largest network upgrade for RWEC.
+EDUCATION
+_______________________________________________________________________________________________________________
+Resume Worded University, New York, NY
+2011
+Bachelor of Science — Electrical Engineering and Computer Science
+SKILLS
+_______________________________________________________________________________________________________________
+Technical Skills: Deep Learning (Advanced), Predictive Modeling (Experienced), Statistical Analysis, Algorithms
+Languages: English (Native), German (Fluent), French (Conversational)

@@ -1,0 +1,138 @@
+from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi.responses import JSONResponse, PlainTextResponse
+import os
+import shutil
+import json
+from fastapi import Form
+from ai_agents import prompts_n_keys
+from ai_agents import structured_prompt_n_keys
+from ai_agents.openai_functions import parse_resume_as_structured
+from ai_agents.openai_functions import ask_with_instruction_json
+from main_functions import get_resume_text
+from ai_agents.prompts_n_keys import get_matching_score_json
+
+
+app = FastAPI()
+
+UPLOAD_DIR = "temp_uploads"
+os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+
+
+@app.post("/upload-resume/")
+async def upload_resume(file: UploadFile = File(...)):
+    if not file.filename.endswith(".pdf"):
+        raise HTTPException(status_code=400, detail="Only PDF files are supported.")
+
+    temp_path = os.path.join(UPLOAD_DIR, file.filename)
+
+    # Save uploaded file temporarily
+    with open(temp_path, "wb") as f:
+        shutil.copyfileobj(file.file, f)
+
+    try:
+        extracted_text = get_resume_text(temp_path)
+        return PlainTextResponse(content=extracted_text, media_type="text/plain")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error processing the PDF: {str(e)}")
+    finally:
+        os.remove(temp_path)
+   
+
+
+
+
+@app.post(
+    "/parse-resume/",
+    summary="Parse raw resume text into structured JSON",
+)
+async def parse_resume(cv_text: str = Form(...)):      # ⬅️  accept form field
+    """
+    Send the text received in the `cv_text` form field to OpenAI
+    and return structured JSON.
+    """
+
+    cv_keys = ask_with_instruction_json(instruction=prompts_n_keys.structured_info.format(output_keys=prompts_n_keys.output_keys, available_filters=prompts_n_keys.available_filters,  cv_text=cv_text), message="extract data as json")
+    return JSONResponse(json.loads(cv_keys))
+
+
+
+@app.post(
+    "/parse-resume-structured/",
+    summary="Parse raw resume text into structured openai response",
+)
+async def parse_resume_structure(file: UploadFile = File(...)):      # ⬅️  accept form field
+
+    if not file.filename.endswith(".pdf"):
+        raise HTTPException(status_code=400, detail="Only PDF files are supported.")
+
+    temp_path = os.path.join(UPLOAD_DIR, file.filename)
+
+    # Save uploaded file temporarily
+    with open(temp_path, "wb") as f:
+        shutil.copyfileobj(file.file, f)
+
+    extracted_text = get_resume_text(temp_path)
+
+    cv_keys = parse_resume_as_structured(cv_text=extracted_text, system_instructions=structured_prompt_n_keys.system_information, resume_schema=structured_prompt_n_keys.resume_schema)
+    return JSONResponse(json.loads(cv_keys))
+
+
+
+
+
+# from linkedin_scraping import main
+
+# @app.post("/get-linkedin-profile/")
+# async def linkedin_profile_text(profile_url: str):
+#     response = main(profile_url)
+
+#     return response
+
+
+
+@app.post(
+    "/match-jobs-form/",
+    summary="Job matching – résumé + jobs passed as form fields",
+)
+
+async def call_openai_job_matcher(resume_json: str, jobs_json: str):
+
+    instructions = """
+    Given the following resume data and list of job descriptions, return a list of matched jobs using the criteria described above.
+
+    Resume:
+    {resume_data}
+
+    Job Descriptions:
+    {jobs_list}
+
+
+    Output keys:
+
+    {output_keys}
+
+    Return only the top 3 matched jobs with detailed matching scores in form of JSON.
+
+    """
+
+    output_keys = get_matching_score_json(skills_weightage=30, work_experience_weightage=25, projects_weightage=25, qualification_weightage=20)
+
+    formated_instructions = instructions.format(resume_data = resume_json, jobs_list=jobs_json, output_keys=output_keys)
+
+    message = "match jobs with resume data and return jobs"
+
+    response = ask_with_instruction_json(formated_instructions, message)
+
+    print("response: ", response)
+
+
+    return JSONResponse(json.loads(response))
+
+
+
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=3000)
