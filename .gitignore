@@ -1,0 +1,6 @@
+venv
+JSONS
+__pycache__
+linkedin*.py
+sample.pdf
+.env

@@ -1,0 +1,11 @@
+version: "3.9"
+services:
+  app:
+    build:
+      context: ./application   # path where Dockerfile is
+      dockerfile: Dockerfile
+    container_name: my_app
+    ports:
+      - "8000:8000"   # map container:host ports
+    volumes:
+      - ./application:/app
