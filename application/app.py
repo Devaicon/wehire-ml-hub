@@ -18,6 +18,21 @@ UPLOAD_DIR = "temp_uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 
+@app.get("/")
+async def health_check():
+    return {"status": "healthy", "service": "wehire-ml-hub"}
+
+
+@app.get("/health")
+async def detailed_health_check():
+    return {
+        "status": "healthy",
+        "service": "wehire-ml-hub",
+        "version": "1.0.0",
+        "timestamp": "2025-08-30"
+    }
+
+
 
 @app.post("/upload-resume/")
 async def upload_resume(file: UploadFile = File(...)):
