@@ -135,4 +135,4 @@ async def call_openai_job_matcher(resume_json: str, jobs_json: str):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=3000)
+    uvicorn.run(app, host="0.0.0.0", port=8000)
