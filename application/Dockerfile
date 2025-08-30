@@ -15,4 +15,4 @@ COPY . .
 EXPOSE 8000
 
 # Start command (replace with your app’s entry point)
-CMD ["python", "app.py"]
+CMD ["python", "application/app.py"]
