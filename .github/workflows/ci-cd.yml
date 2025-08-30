@@ -9,7 +9,7 @@ env:
   BACKEND_ECR_REPO: wehire-backend
   BACKEND_TASK_DEFINITION: wehire-task-def
   BACKEND_ECS_CLUSTER: wehire
-  BACKEND_ECS_SERVICE: wehire-task-def
+  BACKEND_ECS_SERVICE: wehire-service
 
 jobs:
   BackendDeployOnECS:
