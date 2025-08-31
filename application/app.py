@@ -147,6 +147,58 @@ async def call_openai_job_matcher(resume_json: str, jobs_json: str):
 
 
 
+@app.post(
+    "/generate-job-email/",
+    summary="Generate email subject & content from CV + Job detail",
+)
+async def generate_job_email(job_json: str, resume_json: str):
+    instructions = """
+    You are an AI assistant helping a job applicant.
+    Given the following **resume data** and a **job description**, 
+    write a professional email subject and email content that the candidate 
+    could use to apply for the job.
+
+    Requirements:
+    - Subject line should be concise and professional.
+    - Email content should be polite, formal, and tailored to the job description.
+    - Mention relevant skills/experience from the resume.
+
+    Resume:
+    {resume_data}
+
+    Job Description:
+    {job_data}
+
+    Output JSON keys:
+    {{
+        "job_id": "<employerId from job_data>",
+        "subject": "<email_subject>",
+        "email_content": "<email_body>"
+    }}
+    """
+
+    # job_json will be a dict in string form, so we parse it to extract job_id
+    job_data = json.loads(job_json)
+    resume_data = json.loads(resume_json)
+
+    formatted_instructions = instructions.format(
+        resume_data=json.dumps(resume_data, indent=2),
+        job_data=json.dumps(job_data, indent=2),
+    )
+
+    message = "Write subject and email content for job application"
+    
+    # Call your OpenAI wrapper
+    response = ask_with_instruction_json(formatted_instructions, message)
+    
+    # Attach job_id to final JSON
+    response_json = json.loads(response)
+
+    return JSONResponse(response_json)
+
+
+
+
 
 if __name__ == "__main__":
     import uvicorn
