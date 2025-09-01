@@ -10,6 +10,7 @@ from ai_agents.openai_functions import enhance_resume_wrt_job, parse_resume_as_s
 from ai_agents.openai_functions import ask_with_instruction_json
 from main_functions import get_resume_text
 from ai_agents.prompts_n_keys import get_matching_score_json
+from linkedin_scraping import get_linkedin_profile_text
 
 
 app = FastAPI()
@@ -92,6 +93,22 @@ async def parse_resume_structure(file: UploadFile = File(...)):      # ⬅️  a
 
     cv_keys = parse_resume_as_structured(cv_text=extracted_text, system_instructions=structured_prompt_n_keys.system_information, resume_schema=structured_prompt_n_keys.resume_schema)
     return JSONResponse(json.loads(cv_keys))
+
+
+
+
+
+@app.post(
+    "/parse-linkedin-structured/",
+    summary="Parse LinkedIn profile into structured openai response",
+)
+async def parse_linkedin_structure(profile_url: str): 
+
+    extracted_text = get_linkedin_profile_text(profile_url)
+
+    cv_keys = parse_resume_as_structured(cv_text=extracted_text, system_instructions=structured_prompt_n_keys.system_information, resume_schema=structured_prompt_n_keys.resume_schema)
+    return JSONResponse(json.loads(cv_keys))
+
 
 
 
