@@ -85,6 +85,46 @@ def parse_resume_as_structured(
 
 
 
+def enhance_resume_wrt_job(
+    resume_json: str,
+    job_json: str,
+    system_instructions: str,
+    resume_schema: dict,
+    model: str = Config.MODEL
+):
+    client = OpenAI(api_key=Config.API_KEY)
+
+    # Merge schema into system instructions
+    schema_instructions = f"""
+    You must output strictly valid JSON following this schema:
+    {json.dumps(resume_schema, indent=2)}
+    """
+
+    response = client.responses.create(
+        model=model,
+        input=[
+            {
+                "role": "system",
+                "content": system_instructions + "\n\n" + schema_instructions
+            },
+            {
+                "role": "user",
+                "content": resume_json + "\n\n" + job_json
+            }
+        ]
+    )
+
+    try:
+        parsed = response.output_text
+    except json.JSONDecodeError:
+        raise ValueError("Model did not return valid JSON")
+
+    return parsed
+
+
+
+
+
 
 
 
