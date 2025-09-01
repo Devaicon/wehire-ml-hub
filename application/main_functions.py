@@ -24,8 +24,8 @@ def get_resume_text(pdf_path):
         pdf_text = get_text_pytesseract(pdf_path)
 
     
-    file_path = f"{results_dir}/cvs_txt/{file_name}.txt"
-    save_text_to_file(pdf_text, file_path)
+    # file_path = f"{results_dir}/cvs_txt/{file_name}.txt"
+    # save_text_to_file(pdf_text, file_path)
     
     return pdf_text
     
