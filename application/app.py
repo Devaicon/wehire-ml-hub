@@ -8,6 +8,7 @@ from ai_agents import prompts_n_keys
 from ai_agents import structured_prompt_n_keys
 from ai_agents.openai_functions import enhance_resume_wrt_job, parse_resume_as_structured
 from ai_agents.openai_functions import ask_with_instruction_json
+from ai_agents.job_status import classify_email_status
 from main_functions import get_resume_text
 from ai_agents.prompts_n_keys import get_matching_score_json
 from linkedin_scraping import get_linkedin_profile_text
@@ -234,6 +235,14 @@ async def generate_job_email(job_json: str, resume_json: str):
     return JSONResponse(response_json)
 
 
+
+
+
+@app.post("/classify-job-status")
+def classify_email(
+    email_content: str = Form(...),
+):
+    return classify_email_status(email_content)
 
 
 
