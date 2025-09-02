@@ -102,11 +102,17 @@ async def parse_linkedin_structure(profile_url: str):
     "/enhance_resume_with_jobs/",
     summary="Enhance resume according to job descriptions for ai search and ai apply",
 )
-async def enhance_resume_with_jobs(resume_json: str, job_json: str):      # ⬅️  accept form field
-
-    cv_keys = enhance_resume_wrt_job(resume_json=resume_json, job_json=job_json, system_instructions=structured_prompt_n_keys.enhance_cv_prompt, resume_schema=structured_prompt_n_keys.resume_schema)
+async def enhance_resume_with_jobs(
+    resume_json: str = Form(...),
+    job_json: str = Form(...)
+):
+    cv_keys = enhance_resume_wrt_job(
+        resume_json=resume_json,
+        job_json=job_json,
+        system_instructions=structured_prompt_n_keys.enhance_cv_prompt,
+        resume_schema=structured_prompt_n_keys.resume_schema
+    )
     return JSONResponse(json.loads(cv_keys))
-    
 
 
 
