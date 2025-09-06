@@ -5,13 +5,11 @@ from utils import config as Config
 
 # --- LOGIN ---
 
-# Authenticate
-api = Linkedin(Config.email, Config.password)
 
 def extract_profile_data(profile_url):
+    # Authenticate
 
-    # --- YOUR PROFILE LINK ---
-    profile_url = "https://www.linkedin.com/in/muhammad-usman-ali-251139129"
+    api = Linkedin(Config.email, Config.password)
 
     # Extract username from URL (everything after '/in/')
     username = re.search(r"linkedin\.com/in/([^/]+)/?", profile_url)
