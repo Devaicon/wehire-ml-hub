@@ -46,7 +46,7 @@ def ask_with_instruction(
 
 
 def parse_resume_as_structured(
-    cv_text: str,
+    cv_text: json,
     system_instructions: str,
     resume_schema: dict,
     model: str = Config.MODEL
@@ -68,7 +68,7 @@ def parse_resume_as_structured(
             },
             {
                 "role": "user",
-                "content": cv_text
+                "content": f"{cv_text}"
             }
         ]
     )

@@ -12,6 +12,7 @@ from ai_agents.job_status import classify_email_status
 from main_functions import get_resume_text
 from ai_agents.prompts_n_keys import get_matching_score_json
 from linkedin_scraping import get_linkedin_profile_text
+from extraction.lib_scraping import extract_profile_data
 
 
 app = FastAPI()
@@ -105,7 +106,7 @@ async def parse_resume_structure(file: UploadFile = File(...)):      # ⬅️  a
 )
 async def parse_linkedin_structure(profile_url: str): 
 
-    extracted_text = get_linkedin_profile_text(profile_url)
+    extracted_text = extract_profile_data(profile_url)
 
     cv_keys = parse_resume_as_structured(cv_text=extracted_text, system_instructions=structured_prompt_n_keys.system_information, resume_schema=structured_prompt_n_keys.resume_schema)
     return JSONResponse(json.loads(cv_keys))
