@@ -4,11 +4,11 @@ from utils import config as Config
 
 client = OpenAI(api_key=Config.API_KEY)
 
-def classify_email_status(email_content: str, model: str =Config.MODEL):
+def classify_email_status(email_content: str, model: str = Config.MODEL):
     functions = [
         {
             "name": "classify_application_status",
-            "description": "Classify job application email into a status",
+            "description": "Classify job application email into a status and generate a short notification",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -16,9 +16,13 @@ def classify_email_status(email_content: str, model: str =Config.MODEL):
                         "type": "string",
                         "enum": ["sent", "checked", "accepted", "rejected"],
                         "description": "The current status of the application"
+                    },
+                    "notification": {
+                        "type": "string",
+                        "description": "A short notification for the user about the status"
                     }
                 },
-                "required": ["status"]
+                "required": ["status", "notification"]
             }
         }
     ]
@@ -43,5 +47,8 @@ def classify_email_status(email_content: str, model: str =Config.MODEL):
     args = response.choices[0].message.function_call.arguments
     result = json.loads(args)
 
-    # Ensure response is exactly in required format
-    return {"status": result["status"]}
+    # Ensure response contains both keys
+    return {
+        "status": result["status"],
+        "notification": result["notification"]
+    }
