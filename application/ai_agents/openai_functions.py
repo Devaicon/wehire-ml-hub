@@ -1,7 +1,6 @@
 import json
 from openai import OpenAI
 from utils import config as Config
-from utils import config as Config
 
 
 client = OpenAI(api_key=Config.API_KEY)
