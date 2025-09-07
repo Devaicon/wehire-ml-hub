@@ -9,3 +9,4 @@ python-dotenv
 requests
 selenium
 linkedin-api
+pandas
