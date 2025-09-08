@@ -145,43 +145,34 @@ async def enhance_resume_with_jobs(
 
 
 
-@app.post(
-    "/match-jobs-form/",
-    summary="Job matching – résumé + jobs passed as form fields",
-)
+from pydantic import BaseModel
+from typing import List, Dict, Any
 
-async def call_openai_job_matcher(resume_json: str, jobs_json: str):
+class MatchRequest(BaseModel):
+    resume_json: Dict[str, Any]
+    jobs_json: List[Dict[str, Any]]
 
-    instructions = """
-    Given the following resume data and list of job descriptions, return a list of matched jobs using the criteria described above.
+@app.post("/match-jobs-form/")
+async def call_openai_job_matcher(payload: MatchRequest):
+    resume_json = payload.resume_json
+    jobs_json = payload.jobs_json
+
+    instructions = f"""
+    Given the following resume data and list of job descriptions, return a list of matched jobs with detailed matching scores in form of JSON.
 
     Resume:
-    {resume_data}
+    {resume_json}
 
     Job Descriptions:
-    {jobs_list}
-
+    {jobs_json}
 
     Output keys:
-
-    {output_keys}
-
-    Return only the top 3 matched jobs with detailed matching scores in form of JSON.
-
+    {get_matching_score_json(skills_weightage=30, work_experience_weightage=25, projects_weightage=25, qualification_weightage=20)}
     """
 
-    output_keys = get_matching_score_json(skills_weightage=30, work_experience_weightage=25, projects_weightage=25, qualification_weightage=20)
-
-    formated_instructions = instructions.format(resume_data = resume_json, jobs_list=jobs_json, output_keys=output_keys)
-
-    message = "match jobs with resume data and return jobs"
-
-    response = ask_with_instruction_json(formated_instructions, message)
-
-    print("response: ", response)
-
-
+    response = ask_with_instruction_json(instructions, "match jobs with resume data and return jobs")
     return JSONResponse(json.loads(response))
+
 
 
 
