@@ -8,12 +8,10 @@ from ai_agents import prompts_n_keys
 from ai_agents import structured_prompt_n_keys
 from ai_agents.openai_functions import enhance_resume_wrt_job, parse_resume_as_structured
 from ai_agents.openai_functions import ask_with_instruction_json
-from ai_agents.job_status import classify_email_status
+from ai_agents.job_status import classify_email_status, check_validity_email
 from main_functions import get_resume_text
 from ai_agents.prompts_n_keys import get_matching_score_json
-from linkedin_scraping import get_linkedin_profile_text
-from extraction.lib_scraping import extract_profile_data
-
+from extraction.apify_scraping import extract_profile_data
 
 app = FastAPI()
 
@@ -110,6 +108,7 @@ async def parse_linkedin_structure(profile_url: str):
 
     try:
         extracted_text = extract_profile_data(profile_url)
+        print("extracted_text:", extracted_text)
     except Exception as e:
         response["error_status"] = True
         response["error_message"] = f"Error extracting the LinkedIn profile data: {str(e)}"
@@ -117,6 +116,7 @@ async def parse_linkedin_structure(profile_url: str):
 
     cv_keys = parse_resume_as_structured(cv_text=extracted_text, system_instructions=structured_prompt_n_keys.system_information, resume_schema=structured_prompt_n_keys.resume_schema)
     response["data"] = json.loads(cv_keys)
+    print("final response")
     return response
 
 
@@ -244,6 +244,17 @@ def classify_email(
 ):
     return classify_email_status(email_content)
 
+
+
+@app.post("/check-validity-email")
+def check_email_validatity(
+    company_email_content: str = Form(...),
+    user_response_content: str = Form(...)
+):
+
+    response = check_validity_email(company_email_content, user_response_content)
+    
+    return JSONResponse(json.loads(response))
 
 
 if __name__ == "__main__":
