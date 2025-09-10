@@ -8,7 +8,7 @@ from ai_agents import prompts_n_keys
 from ai_agents import structured_prompt_n_keys
 from ai_agents.openai_functions import enhance_resume_wrt_job, parse_resume_as_structured
 from ai_agents.openai_functions import ask_with_instruction_json
-from ai_agents.job_status import classify_email_status
+from ai_agents.job_status import classify_email_status, check_validity_email
 from main_functions import get_resume_text
 from ai_agents.prompts_n_keys import get_matching_score_json
 from extraction.apify_scraping import extract_profile_data
@@ -229,6 +229,17 @@ def classify_email(
 ):
     return classify_email_status(email_content)
 
+
+
+@app.post("/check-validity-email")
+def check_email_validatity(
+    company_email_content: str = Form(...),
+    user_response_content: str = Form(...)
+):
+
+    response = check_validity_email(company_email_content, user_response_content)
+    
+    return JSONResponse(json.loads(response))
 
 
 if __name__ == "__main__":
