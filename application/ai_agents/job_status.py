@@ -14,18 +14,33 @@ def classify_email_status(email_content: str, model: str = Config.MODEL):
                 "properties": {
                     "status": {
                         "type": "string",
-                        "enum": ["sent", "checked", "accepted", "rejected"],
-                        "description": "The current status of the application"
+                        "enum": ["sent", "checked", "required", "accepted", "rejected"],
+                        "description": (
+                            "The current status of the application:\n"
+                            "- sent: Application has been submitted but no response yet.\n"
+                            "- checked: Company has reviewed or acknowledged the application.\n"
+                            "- required: Company has requested additional documents, information, or actions.\n"
+                            "- accepted: Application has passed the phase (e.g., shortlisted, interview cleared, or hired).\n"
+                            "- rejected: Application was declined by the company."
+                        )
                     },
                     "notification": {
                         "type": "string",
-                        "description": "A short notification for the user about the status"
+                        "description": (
+                            "A short, clear notification for the user:\n"
+                            "- sent: 'Your application has been submitted successfully.'\n"
+                            "- checked: 'Your application has been reviewed by the company.'\n"
+                            "- required: 'The company needs additional information: [extract the exact requirement(s) from the email].'\n"
+                            "- accepted: 'Congratulations! Your application has been accepted.'\n"
+                            "- rejected: 'We’re sorry, your application was not successful.'"
+                        )
                     }
                 },
                 "required": ["status", "notification"]
             }
         }
     ]
+
 
     response = client.chat.completions.create(
         model=model,
