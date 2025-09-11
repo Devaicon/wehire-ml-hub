@@ -225,9 +225,11 @@ async def generate_job_email(job_json: str, resume_json: str):
 
 @app.post("/classify-job-status")
 def classify_email(
-    email_content: str = Form(...),
-):
-    return classify_email_status(email_content)
+    email_content: str = Form(...)
+    ):
+    response =  classify_email_status(email_content)
+
+    return JSONResponse(json.loads(response))
 
 
 
