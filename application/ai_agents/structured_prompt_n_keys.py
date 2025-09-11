@@ -171,7 +171,43 @@ resume_schema = {
             },
             "required": ["gender", "education_level", "job_type", "work_mode"],
             "additionalProperties": False
-        }
+        },
+
+        "tags": {
+        "type": "array",
+        "items": {"type": "string"},
+        "minItems": 1,
+        "description": """Extract a list of relevant job role tags from the given resume data.
+
+        Only include job titles that are directly supported by the candidate’s experience, projects, or qualifications.
+
+        Tags must represent clear job categories such as:
+
+        Data Scientist, Machine Learning Engineer, Frontend Developer, Backend Developer, Full Stack Developer, DevOps Engineer, Cloud Engineer, Mobile Developer, Cybersecurity Specialist, UI/UX Designer, Database Administrator, Project Manager, Business Analyst, etc.
+
+        Do not include specific skills, tools, technologies, programming languages, or certifications.
+
+        Do not guess or assume unrelated roles — only include jobs clearly aligned with the resume content.
+
+        Avoid duplicates or near-duplicate roles.
+
+        Always return at least 5 distinct, job-ready role tags the person is qualified for, based on the resume.
+
+        🎯 Tags must be:
+
+        Concise
+
+        Directly inferred from resume data
+
+        Job-focused
+
+        Non-redundant
+
+        Relevant for job applications"""
+    }
+
+
+
     },
     "required": [
         "personalInfo",
