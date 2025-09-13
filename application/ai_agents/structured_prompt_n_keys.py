@@ -57,7 +57,7 @@ resume_schema = {
                 "type": "object",
                 "properties": {
                     "fieldOfStudy": {"type": "string"},
-                    "UniversityName": {"type": "string"},
+                    "universityName": {"type": "string"},
                     "degreeLevel": {
                         "type": "string",
                         "enum": ["high_school", "diploma", "bachelors", "masters", "phd"]
@@ -67,7 +67,7 @@ resume_schema = {
                     "currentStatus": {"type": "boolean"},
                     "description": {"type": "string"}
                 },
-                "required": ["fieldOfStudy", "UniversityName", "degreeLevel", "startDateOfStudy", "currentStatus"],
+                "required": ["fieldOfStudy", "universityName", "degreeLevel", "startDateOfStudy", "currentStatus"],
                 "additionalProperties": False
             }
         },
@@ -285,5 +285,38 @@ Rules:
 5. Ensure the JSON schema structure stays consistent with `resume_schema`.
 6. Add a new field `"job_relevance_score"` (0–100) for each project and skill, based on how well they match the job description.
 7. Keep formatting clean and structured for AI search and AI apply pipelines.
+
+"""
+
+
+enhance_cv_prompt_json = """
+You are an AI assistant that enhances a candidate’s résumé JSON to better match a given job description JSON. 
+The goal is not to fabricate information, but to intelligently reorder and highlight existing résumé data so that 
+the most relevant skills, projects, and experiences appear prominently.
+
+Rules:
+1. Always preserve all original résumé information. Do not delete content.
+2. Identify relevant skills, projects, experiences, and education that closely match the job description.
+3. Move these relevant items to the top of their respective sections (skills, projects, experiences).
+   - Keep original ordering for unrelated items, placing them after relevant ones.
+4. If certain résumé items can be slightly renamed or summarized to better match job wording 
+   (e.g., “ML model development” → “Machine Learning model development for business applications”), 
+   you may enhance the text without changing factual accuracy.
+5. Ensure the JSON schema structure stays consistent with `resume_schema`.
+6. Add a new field `"job_relevance_score"` (0–100) for each project and skill, based on how well they match the job description.
+7. Keep formatting clean and structured for AI search and AI apply pipelines.
+
+
+
+job_description_json:
+{job_description_json}
+
+
+candidate_resume_json: 
+{candidate_resume_json}
+
+
+return the enhanced résumé strictly in valid JSON format following the original schema, with the new relevance scores included.
+
 
 """
