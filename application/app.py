@@ -13,6 +13,20 @@ from main_functions import get_resume_text
 from ai_agents.prompts_n_keys import get_matching_score_json
 from extraction.apify_scraping import extract_profile_data
 
+from pydantic import BaseModel
+from typing import List, Dict, Any
+
+class MatchRequest(BaseModel):
+    resume_json: Dict[str, Any]
+    jobs_json: List[Dict[str, Any]]
+
+
+class EnhanceRequest(BaseModel):
+    resume_json: Dict[str, Any]
+    job_json: Dict[str, Any]
+
+
+
 app = FastAPI()
 
 UPLOAD_DIR = "temp_uploads"
@@ -127,6 +141,27 @@ async def enhance_resume_with_jobs(
 
 
 
+@app.post(
+    "/enhance_resume_with_jobs_body/",
+    summary="Enhance resume according to job descriptions for ai search and ai apply",
+)
+async def enhance_resume_with_jobs_body(payload: EnhanceRequest):
+    import json
+    resume_str = json.dumps(payload.resume_json, indent=2)
+    job_str = json.dumps(payload.job_json, indent=2)
+
+
+    cv_keys = enhance_resume_wrt_job(
+        resume_json=resume_str,
+        job_json=job_str,
+        system_instructions=structured_prompt_n_keys.enhance_cv_prompt,
+        resume_schema=structured_prompt_n_keys.resume_schema
+    )
+    return JSONResponse(json.loads(cv_keys))
+
+
+
+
 
 # from linkedin_scraping import main
 
@@ -138,12 +173,7 @@ async def enhance_resume_with_jobs(
 
 
 
-from pydantic import BaseModel
-from typing import List, Dict, Any
 
-class MatchRequest(BaseModel):
-    resume_json: Dict[str, Any]
-    jobs_json: List[Dict[str, Any]]
 
 @app.post("/match-jobs-form/")
 async def call_openai_job_matcher(payload: MatchRequest):
