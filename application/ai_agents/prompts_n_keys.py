@@ -126,7 +126,7 @@ output_keys = {
   "education": [
     {
       "fieldOfStudy": "string",
-      "UniversityName": "string",
+      "universityName": "string",
       "degreeLevel": "string (e.g., Bachelor's, Master's, PhD)",
       "startDateOfStudy": "string (YYYY-MM-DD or partial)",
       "endDateOfStudy": "string (YYYY-MM-DD or null if current)",
