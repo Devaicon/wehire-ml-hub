@@ -5,8 +5,8 @@ import shutil
 import json
 from fastapi import Form
 from ai_agents import prompts_n_keys
-from ai_agents import structured_prompt_n_keys
-from ai_agents.openai_functions import enhance_resume_wrt_job, parse_resume_as_structured
+from ai_agents import structured_prompt_n_keys, enhanced_resume_prompts
+from ai_agents.openai_functions import enhance_resume_wrt_job, parse_resume_as_structured, enhance_resume_wrt_ai
 from ai_agents.openai_functions import ask_with_instruction_json
 from ai_agents.job_status import classify_email_status, check_validity_email
 from main_functions import get_resume_text
@@ -21,9 +21,20 @@ class MatchRequest(BaseModel):
     jobs_json: List[Dict[str, Any]]
 
 
+class MatchRequestDb(BaseModel):
+    user_id: str
+    resume_json: Dict[str, Any]
+
+
+
 class EnhanceRequest(BaseModel):
     resume_json: Dict[str, Any]
     job_json: Dict[str, Any]
+
+
+class EnhancedRequest(BaseModel):
+    resume_json: Dict[str, Any]
+
 
 
 
@@ -49,7 +60,7 @@ async def detailed_health_check():
 
 
 
-@app.post("/upload-resume/")
+# @app.post("/upload-resume/")
 async def upload_resume(file: UploadFile = File(...)):
     if not file.filename.endswith(".pdf"):
         raise HTTPException(status_code=400, detail="Only PDF files are supported.")
@@ -73,10 +84,10 @@ async def upload_resume(file: UploadFile = File(...)):
 
 
 
-@app.post(
-    "/parse-resume/",
-    summary="Parse raw resume text into structured JSON",
-)
+# @app.post(
+#     "/parse-resume/",
+#     summary="Parse raw resume text into structured JSON",
+# )
 async def parse_resume(cv_text: str = Form(...)):      # ⬅️  accept form field
     """
     Send the text received in the `cv_text` form field to OpenAI
@@ -177,6 +188,26 @@ async def enhance_resume_with_jobs_body(payload: EnhanceRequest):
 
 
 
+@app.post(
+    "/enhance_resume_ai/",
+    summary="Generate an AI-enhanced, ATS-optimized resume with professional improvements and missing data insights"
+)
+async def enhance_resume_with_jobs_body(payload: EnhancedRequest):
+    import json
+    resume_str = json.dumps(payload.resume_json, indent=2)
+
+
+    cv_keys = enhance_resume_wrt_ai(
+        resume_json=resume_str,
+        system_instructions=enhanced_resume_prompts.enhance_cv_via_ai.format(resume_json=resume_str),
+        resume_schema=enhanced_resume_prompts.resume_enhanced_schema
+    )
+    return JSONResponse(json.loads(cv_keys))
+
+
+
+
+
 
 # from linkedin_scraping import main
 
@@ -213,6 +244,36 @@ async def call_openai_job_matcher(payload: MatchRequest):
 
 
 
+# @app.post("/match-jobs-db/")
+async def call_openai_job_matcher(payload: MatchRequestDb):
+    resume_json = payload.resume_json
+    user_id = payload.user_id
+
+
+    sample_jobs = "JSONS/db_jobs.json"
+
+    with open(sample_jobs, "r") as f:
+        jobs_db_data = json.load(f)
+
+        jobs_json = jobs_db_data.get("data", {}).get("jobPosts", [])
+
+    instructions = f"""
+    Given the following resume data and list of job descriptions, return a list of matched jobs with detailed matching scores in form of JSON.
+
+    Resume:
+    {resume_json}
+
+    Job Descriptions:
+    {jobs_json}
+
+    Output keys:
+    {get_matching_score_json(skills_weightage=30, work_experience_weightage=25, projects_weightage=25, qualification_weightage=20)}
+    """
+
+    response = ask_with_instruction_json(instructions, "match jobs with resume data and return jobs")
+    return JSONResponse(json.loads(response))
+
+
 
 
 @app.post(
@@ -221,29 +282,83 @@ async def call_openai_job_matcher(payload: MatchRequest):
 )
 async def generate_job_email(job_json: str, resume_json: str):
     instructions = """
-    You are an AI assistant helping a job applicant.
-    Given the following **resume data** and a **job description**, 
-    write a professional email subject and email content that the candidate 
-    could use to apply for the job.
+    You are an expert HR copywriter and career coach. Given the following **resume data** and **job description**, write a job-application email that follows current best practices and professional standards.
 
-    Requirements:
-    - Subject line should be concise and professional.
-    - Email content should be polite, formal, and tailored to the job description.
-    - Mention relevant skills/experience from the resume.
+    ---
 
-    Resume:
+    ### Input
+
+    **Resume Data:**  
     {resume_data}
 
-    Job Description:
+    **Job Description:**  
     {job_data}
 
-    Output JSON keys:
+    ---
+
+    ### Requirements / Best Practices
+
+    - Output must be valid JSON with exactly these keys:
     {{
         "job_id": "<employerId from job_data>",
         "subject": "<email_subject>",
         "email_content": "<email_body>"
     }}
+
+    - **Subject line**:
+    * Must match *one of these formats*:
+        1. Application for [Job Title] – [Your Full Name]  
+        2. [Job Title] Position – [Your Name]  
+        3. [Your Name] – [Job Title] Application – [X+ Years Experience]  
+        4. Experienced [Role] Applying for [Role] Role – [Your Name]  
+        5. Application: [Role] – [Key qualifier] – [Your Name]  
+    * Include the candidate’s name and job title (and job reference/ID if provided).  
+    * Be clear, professional. Avoid vague or generic phrases.  
+    * Keep concise (approx 6-10 words) so it isn’t truncated, especially on mobile.
+
+    - **Salutation / Greeting**:
+    * If hiring manager or contact person is known, address by name (“Dear Ms. Smith,” etc.).  
+    * If not, “Dear Hiring Manager,” or similar formal greeting.
+
+    - **Opening paragraph**:
+    * State clearly which position you are applying for, and optionally where you found the listing.  
+    * Introduce yourself briefly.
+
+    - **Body**:
+    * Highlight top 1-3 relevant skills, experiences, or achievements from the resume that map to requirements in the job description.  
+    * Use specific examples (metrics, results if possible).  
+    * Show alignment with the company or job (why this role, what you bring).
+
+    - **Attachments and Documents**:
+    * Mention that you’ve attached your resume (and cover letter if applicable).  
+    * Use professional file names and suitable format (PDF if possible).
+
+    - **Tone, Language, Style**:
+    * Polite, formal, respectful; avoid slang, emojis, abbreviations.  
+    * Use active voice.  
+    * Proofread: grammar, spelling, consistency.
+
+    - **Length / Structure**:
+    * Body should be 3-4 short paragraphs. Total ~150-200 words.  
+    * Use paragraph breaks for readability.
+
+    - **Closing / Signature**:
+    * Close with a courteous line (e.g. “Thank you for considering my application. I look forward to the possibility of discussing this opportunity.”)  
+    * Include full name, email, phone number in signature.
+
+    ---
+
+    ### Example Output
+
+    {{
+    "job_id": "98765",
+    "subject": "Application for Marketing Manager – Jane Doe",
+    "email_content": "Dear Hiring Manager,\\n\\nI am writing to apply for the Marketing Manager position at Acme Corp that I found on LinkedIn. With over six years of experience in digital marketing and campaign strategy, I have successfully increased customer acquisition by 40% at my current role through targeted social media and email campaigns.\\n\\nI believe these experiences align well with Acme’s goal to expand its online presence. I have attached my resume in PDF format for your review. Thank you for considering my application. I would welcome the opportunity to discuss further how I can contribute to your team.\\n\\nSincerely,\\nJane Doe\\n[jane.doe@example.com]\\n[+1-234-567-890]"
+    }}
+
+    ---
     """
+    # Later format this with resume_data, job_data
 
     # job_json will be a dict in string form, so we parse it to extract job_id
     job_data = json.loads(job_json)

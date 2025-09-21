@@ -22,6 +22,11 @@ def ask_with_instruction_json(
 
         print("response:: ", out)
 
+        # ✅ Print usage if available
+        if hasattr(chat_completion, "usage"):
+            print("=== Usage ===")
+            print(chat_completion.usage)
+
         return out
 
 
@@ -76,6 +81,9 @@ def parse_resume_as_structured(
         parsed = response.output_text
     except json.JSONDecodeError:
         raise ValueError("Model did not return valid JSON")
+    
+    usage = response.usage  # has input_tokens, output_tokens, total_tokens
+    print("Token usage:", usage)
 
     return parsed
 
@@ -117,6 +125,55 @@ def enhance_resume_wrt_job(
         parsed = response.output_text
     except json.JSONDecodeError:
         raise ValueError("Model did not return valid JSON")
+    
+
+    if hasattr(response, "usage"):
+        print(json.dumps(response.usage.model_dump(), indent=2))
+    
+
+    return parsed
+
+
+
+
+
+def enhance_resume_wrt_ai(
+    resume_json: str,
+    system_instructions: str,
+    resume_schema: dict,
+    model: str = Config.MODEL
+):
+    client = OpenAI(api_key=Config.API_KEY)
+
+    # Merge schema into system instructions
+    schema_instructions = f"""
+    You must output strictly valid JSON following this schema:
+    {json.dumps(resume_schema, indent=2)}
+    """
+
+    response = client.responses.create(
+        model=model,
+        input=[
+            {
+                "role": "system",
+                "content": system_instructions + "\n\n" + schema_instructions
+            },
+            {
+                "role": "user",
+                "content": resume_json
+            }
+        ]
+    )
+
+    try:
+        parsed = response.output_text
+    except json.JSONDecodeError:
+        raise ValueError("Model did not return valid JSON")
+    
+
+    if hasattr(response, "usage"):
+        print(json.dumps(response.usage.model_dump(), indent=2))
+    
 
     return parsed
 
