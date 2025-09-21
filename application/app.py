@@ -5,8 +5,8 @@ import shutil
 import json
 from fastapi import Form
 from ai_agents import prompts_n_keys
-from ai_agents import structured_prompt_n_keys
-from ai_agents.openai_functions import enhance_resume_wrt_job, parse_resume_as_structured
+from ai_agents import structured_prompt_n_keys, enhanced_resume_prompts
+from ai_agents.openai_functions import enhance_resume_wrt_job, parse_resume_as_structured, enhance_resume_wrt_ai
 from ai_agents.openai_functions import ask_with_instruction_json
 from ai_agents.job_status import classify_email_status, check_validity_email
 from main_functions import get_resume_text
@@ -21,9 +21,20 @@ class MatchRequest(BaseModel):
     jobs_json: List[Dict[str, Any]]
 
 
+class MatchRequestDb(BaseModel):
+    user_id: str
+    resume_json: Dict[str, Any]
+
+
+
 class EnhanceRequest(BaseModel):
     resume_json: Dict[str, Any]
     job_json: Dict[str, Any]
+
+
+class EnhancedRequest(BaseModel):
+    resume_json: Dict[str, Any]
+
 
 
 
@@ -34,7 +45,7 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 
 
-@app.post("/upload-resume/")
+# @app.post("/upload-resume/")
 async def upload_resume(file: UploadFile = File(...)):
     if not file.filename.endswith(".pdf"):
         raise HTTPException(status_code=400, detail="Only PDF files are supported.")
@@ -58,10 +69,10 @@ async def upload_resume(file: UploadFile = File(...)):
 
 
 
-@app.post(
-    "/parse-resume/",
-    summary="Parse raw resume text into structured JSON",
-)
+# @app.post(
+#     "/parse-resume/",
+#     summary="Parse raw resume text into structured JSON",
+# )
 async def parse_resume(cv_text: str = Form(...)):      # ⬅️  accept form field
     """
     Send the text received in the `cv_text` form field to OpenAI
@@ -162,6 +173,26 @@ async def enhance_resume_with_jobs_body(payload: EnhanceRequest):
 
 
 
+@app.post(
+    "/enhance_resume_ai/",
+    summary="Generate an AI-enhanced, ATS-optimized resume with professional improvements and missing data insights"
+)
+async def enhance_resume_with_jobs_body(payload: EnhancedRequest):
+    import json
+    resume_str = json.dumps(payload.resume_json, indent=2)
+
+
+    cv_keys = enhance_resume_wrt_ai(
+        resume_json=resume_str,
+        system_instructions=enhanced_resume_prompts.enhance_cv_via_ai.format(resume_json=resume_str),
+        resume_schema=enhanced_resume_prompts.resume_enhanced_schema
+    )
+    return JSONResponse(json.loads(cv_keys))
+
+
+
+
+
 
 # from linkedin_scraping import main
 
@@ -196,6 +227,36 @@ async def call_openai_job_matcher(payload: MatchRequest):
     response = ask_with_instruction_json(instructions, "match jobs with resume data and return jobs")
     return JSONResponse(json.loads(response))
 
+
+
+# @app.post("/match-jobs-db/")
+async def call_openai_job_matcher(payload: MatchRequestDb):
+    resume_json = payload.resume_json
+    user_id = payload.user_id
+
+
+    sample_jobs = "JSONS/db_jobs.json"
+
+    with open(sample_jobs, "r") as f:
+        jobs_db_data = json.load(f)
+
+        jobs_json = jobs_db_data.get("data", {}).get("jobPosts", [])
+
+    instructions = f"""
+    Given the following resume data and list of job descriptions, return a list of matched jobs with detailed matching scores in form of JSON.
+
+    Resume:
+    {resume_json}
+
+    Job Descriptions:
+    {jobs_json}
+
+    Output keys:
+    {get_matching_score_json(skills_weightage=30, work_experience_weightage=25, projects_weightage=25, qualification_weightage=20)}
+    """
+
+    response = ask_with_instruction_json(instructions, "match jobs with resume data and return jobs")
+    return JSONResponse(json.loads(response))
 
 
 
