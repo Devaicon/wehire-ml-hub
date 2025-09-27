@@ -2,6 +2,7 @@ from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.responses import JSONResponse, PlainTextResponse
 import os
 import shutil
+import time
 import json
 from fastapi import Form
 from ai_agents import prompts_n_keys
@@ -105,6 +106,12 @@ async def parse_resume(cv_text: str = Form(...)):      # ⬅️  accept form fie
 )
 async def parse_resume_structure(file: UploadFile = File(...)):      # ⬅️  accept form field
 
+    start_total = time.perf_counter()
+
+    # ---- Part 1: Validation, Save, Extract ----
+    start_part1 = time.perf_counter()
+
+
     if not file.filename.endswith(".pdf"):
         raise HTTPException(status_code=400, detail="Only PDF files are supported.")
 
@@ -116,7 +123,23 @@ async def parse_resume_structure(file: UploadFile = File(...)):      # ⬅️  a
 
     extracted_text = get_resume_text(temp_path)
 
+    end_part1 = time.perf_counter()
+
+    # ---- Part 2: Parsing ----
+    start_part2 = time.perf_counter()
+
     cv_keys = parse_resume_as_structured(cv_text=extracted_text, system_instructions=structured_prompt_n_keys.system_information, resume_schema=structured_prompt_n_keys.resume_schema)
+
+    end_part2 = time.perf_counter()
+    end_total = time.perf_counter()
+
+    # ---- Print timings ----
+    # print(f"⏱ File validation + extraction took: {end_part1 - start_part1:.4f} sec")
+    # print(f"⏱ Parsing took: {end_part2 - start_part2:.4f} sec")
+    # print(f"⏱ Total time: {end_total - start_total:.4f} sec")
+
+    print("processed: returning response")
+    
     return JSONResponse(json.loads(cv_keys))
 
 
@@ -150,41 +173,90 @@ async def parse_linkedin_structure(profile_url: str):
 
 @app.post(
     "/enhance_resume_with_jobs/",
-    summary="Enhance resume according to job descriptions for ai search and ai apply",
+    summary="Enhance resume according to job descriptions for AI search and AI apply",
 )
 async def enhance_resume_with_jobs(
     resume_json: str = Form(...),
     job_json: str = Form(...)
 ):
+    import json
+
+    # Step 1: Parse input resume JSON
+    resume_dict = json.loads(resume_json)
+
+    # Step 2: Extract subset to send to AI
+    resume_subset = {
+        "aboutMe": resume_dict.get("aboutMe", {}),
+        "professionalSkills": resume_dict.get("professionalSkills", {}),
+        "workExperience": resume_dict.get("workExperience", []),
+        "workProjects": resume_dict.get("workProjects", [])
+    }
+
+    resume_str = json.dumps(resume_subset, indent=2)
+
+    # Step 3: Call AI enhancement with job description
     cv_keys = enhance_resume_wrt_job(
-        resume_json=resume_json,
+        resume_json=resume_str,
         job_json=job_json,
         system_instructions=structured_prompt_n_keys.enhance_cv_prompt,
         resume_schema=structured_prompt_n_keys.resume_schema
     )
-    return JSONResponse(json.loads(cv_keys))
+
+    # Step 4: Parse AI response into dict
+    updated_subset = json.loads(cv_keys)
+
+    # Step 5: Merge updated subset back into full resume
+    for key in ["aboutMe", "professionalSkills", "workExperience", "workProjects"]:
+        if key in updated_subset:
+            resume_dict[key] = updated_subset[key]
+
+    # Step 6: Return full enhanced resume
+    return JSONResponse(resume_dict)
+
 
 
 
 
 @app.post(
     "/enhance_resume_with_jobs_body/",
-    summary="Enhance resume according to job descriptions for ai search and ai apply",
+    summary="Enhance resume according to job descriptions for AI search and AI apply",
 )
 async def enhance_resume_with_jobs_body(payload: EnhanceRequest):
     import json
-    resume_str = json.dumps(payload.resume_json, indent=2)
-    job_str = json.dumps(payload.job_json, indent=2)
 
+    # Step 1: Extract original resume
+    resume_dict = payload.resume_json
+    job_dict = payload.job_json
 
+    # Step 2: Extract subset for AI enhancement
+    resume_subset = {
+        "aboutMe": resume_dict.get("aboutMe", {}),
+        "professionalSkills": resume_dict.get("professionalSkills", {}),
+        "workExperience": resume_dict.get("workExperience", []),
+        "workProjects": resume_dict.get("workProjects", [])
+    }
+
+    resume_str = json.dumps(resume_subset, indent=2)
+    job_str = json.dumps(job_dict, indent=2)
+
+    # Step 3: Call AI enhancement
     cv_keys = enhance_resume_wrt_job(
         resume_json=resume_str,
         job_json=job_str,
         system_instructions=structured_prompt_n_keys.enhance_cv_prompt,
         resume_schema=structured_prompt_n_keys.resume_schema
     )
-    return JSONResponse(json.loads(cv_keys))
 
+    # Step 4: Parse AI response
+    updated_subset = json.loads(cv_keys)
+
+    # Step 5: Merge subset back into full resume
+    for key in ["aboutMe", "professionalSkills", "workExperience", "workProjects"]:
+        if key in updated_subset:
+            resume_dict[key] = updated_subset[key]
+
+    # Step 6: Return the full updated resume
+    return JSONResponse(resume_dict)
 
 
 
