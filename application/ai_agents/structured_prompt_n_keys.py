@@ -1,3 +1,5 @@
+from utils import resume_enum_values as ENUM_VALUES
+
 resume_schema = {
     "type": "object",
     "properties": {
@@ -11,44 +13,68 @@ resume_schema = {
                 "maritalStatus": {"type": "string"},
                 "city": {"type": "string"},
                 "dob": {"type": "string"},
-                "gender": {"type": "string"}
+                "gender": {"type": "string", "enum": ENUM_VALUES.GENDER_ENUM},
+                "website": {"type": "string", "format": "uri"},
+                "location": {"type": "string"}
             },
-            "required": ["firstName", "lastName", "email", "mobile", "city", "gender"],
-            "additionalProperties": False
+            "required": [
+                "firstName",
+                "lastName",
+                "email",
+                "mobile",
+                "maritalStatus",
+                "city",
+                "dob",
+                "gender",
+                "website",
+                "location"
+            ],
+            "additionalProperties": False,
         },
         "aboutMe": {
             "type": "object",
             "properties": {
-                "about": {"type": "string"}
+                "about": {"type": "string"},
             },
             "required": ["about"],
-            "additionalProperties": False
+            "additionalProperties": False,
         },
         "professionalSkills": {
             "type": "object",
             "properties": {
                 "skills": {
                     "type": "array",
-                    "items": {"type": "string"}
+                    "items": {"type": "string"},
                 }
             },
             "required": ["skills"],
-            "additionalProperties": False
+            "additionalProperties": False,
         },
-        "workExpereince": {
+        "workExperience": {
             "type": "array",
             "items": {
                 "type": "object",
                 "properties": {
                     "jobTitle": {"type": "string"},
                     "companyName": {"type": "string"},
+                    "location": {"type": "string"},
+                    "employmentType": {"type": "string"},
                     "startEmploymentPeriod": {"type": "string"},
                     "endEmploymentPeriod": {"type": ["string", "null"]},
                     "currentStatus": {"type": "boolean"},
-                    "description": {"type": "string"}
+                    "description": {"type": "string"},
                 },
-                "required": ["jobTitle", "companyName", "startEmploymentPeriod", "currentStatus"],
-                "additionalProperties": False
+                "required": [
+                    "jobTitle",
+                    "companyName",
+                    "location",
+                    "employmentType",
+                    "startEmploymentPeriod",
+                    "endEmploymentPeriod",
+                    "currentStatus",
+                    "description"
+                ],
+                "additionalProperties": False,
             }
         },
         "education": {
@@ -56,19 +82,68 @@ resume_schema = {
             "items": {
                 "type": "object",
                 "properties": {
-                    "fieldOfStudy": {"type": "string"},
                     "universityName": {"type": "string"},
-                    "degreeLevel": {
-                        "type": "string",
-                        "enum": ["high_school", "diploma", "bachelors", "masters", "phd"]
-                    },
+                    "degreeLevel": {"type": "string", "enum": ENUM_VALUES.DEGREE_LEVEL_ENUM},
+                    "fieldOfStudy": {"type": "string"},
                     "startDateOfStudy": {"type": "string"},
                     "endDateOfStudy": {"type": ["string", "null"]},
                     "currentStatus": {"type": "boolean"},
-                    "description": {"type": "string"}
+                    "location": {"type": "string"},
+                    "gpa": {"type": "string"},
+                    "hasMinor": {"type": "boolean"},
+                    "minorField": {"type": "string"},
+                    "minorGPA": {"type": "string"},
+                    "relevantCoursework": {"type": "string"},
+                    "achievements": {"type": "string"},
+                    "honors": {"type": "string"},
                 },
-                "required": ["fieldOfStudy", "universityName", "degreeLevel", "startDateOfStudy", "currentStatus"],
-                "additionalProperties": False
+                "required": [
+                    "universityName",
+                    "degreeLevel",
+                    "fieldOfStudy",
+                    "startDateOfStudy",
+                    "endDateOfStudy",
+                    "currentStatus",
+                    "location",
+                    "gpa",
+                    "hasMinor",
+                    "minorField",
+                    "minorGPA",
+                    "relevantCoursework",
+                    "achievements",
+                    "honors"
+                ],
+                "additionalProperties": False,
+            }
+        },
+        "workProjects": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "projectName": {"type": "string"},
+                    "projectLink": {"type": "string", "format": "uri"},
+                    "projectDescription": {"type": "string"},
+                    "technologiesUsed": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                    },
+                    "projectType": {"type": "string", "enum": ENUM_VALUES.PROJECT_TYPE_ENUM},
+                    "projectStartDate": {"type": "string"},
+                    "projectEndDate": {"type": "string"},
+                    "projectStatus": {"type": "string"},
+                },
+                "required": [
+                    "projectName",
+                    "projectLink",
+                    "projectDescription",
+                    "technologiesUsed",
+                    "projectType",
+                    "projectStartDate",
+                    "projectEndDate",
+                    "projectStatus"
+                ],
+                "additionalProperties": False,
             }
         },
         "links": {
@@ -80,15 +155,15 @@ resume_schema = {
                         "type": "object",
                         "properties": {
                             "title": {"type": "string"},
-                            "link": {"type": "string", "format": "uri"}
+                            "link": {"type": "string", "format": "uri"},
                         },
                         "required": ["title", "link"],
-                        "additionalProperties": False
+                        "additionalProperties": False,
                     }
                 }
             },
             "required": ["socialMedias"],
-            "additionalProperties": False
+            "additionalProperties": False,
         },
         "language": {
             "type": "object",
@@ -99,18 +174,15 @@ resume_schema = {
                         "type": "object",
                         "properties": {
                             "langName": {"type": "string"},
-                            "langLevel": {
-                                "type": "string",
-                                "enum": ["Beginner", "Intermediate", "Fluent", "Native"]
-                            }
+                            "langLevel": {"type": "string", "enum": ENUM_VALUES.LANGUAGE_LEVEL_ENUM},
                         },
                         "required": ["langName", "langLevel"],
-                        "additionalProperties": False
+                        "additionalProperties": False,
                     }
                 }
             },
             "required": ["languages"],
-            "additionalProperties": False
+            "additionalProperties": False,
         },
         "jobPreferences": {
             "type": "array",
@@ -122,15 +194,21 @@ resume_schema = {
                     "customSalary": {"type": "string"},
                     "acceptableContract": {
                         "type": "array",
-                        "items": {"type": "string"}
+                        "items": {"type": "string"},
                     },
                     "seniorityLevel": {
                         "type": "array",
-                        "items": {"type": "string"}
-                    }
+                        "items": {"type": "string"},
+                    },
                 },
-                "required": ["jobCategory"],
-                "additionalProperties": False
+                "required": [
+                    "jobCategory",
+                    "jobCategorySalary",
+                    "customSalary",
+                    "acceptableContract",
+                    "seniorityLevel"
+                ],
+                "additionalProperties": False,
             }
         },
         "preferredJobBenefits": {
@@ -140,11 +218,11 @@ resume_schema = {
                 "properties": {
                     "benefits": {
                         "type": "array",
-                        "items": {"type": "string"}
+                        "items": {"type": "string"},
                     }
                 },
                 "required": ["benefits"],
-                "additionalProperties": False
+                "additionalProperties": False,
             }
         },
         "jobAchievements": {
@@ -152,79 +230,62 @@ resume_schema = {
             "items": {
                 "type": "object",
                 "properties": {
-                    "achievements": {
-                        "type": "array",
-                        "items": {"type": "string"}
-                    }
+                    "AwardName": {"type": "string"},
+                    "OrganizationName": {"type": "string"},
+                    "DateReceived": {"type": "string"},
+                    "AwardDescription": {"type": "string"},
+                    "AwardStartDate": {"type": "string"},
+                    "AwardEndDate": {"type": "string"},
+                    "AwardLevel": {"type": "string", "enum": ENUM_VALUES.AWARD_LEVEL_ENUM},
+                    "AwardCategory": {"type": "string", "enum": ENUM_VALUES.AWARD_CATEGORY_ENUM},
                 },
-                "required": ["achievements"],
-                "additionalProperties": False
+                "required": [
+                    "AwardName",
+                    "OrganizationName",
+                    "DateReceived",
+                    "AwardDescription",
+                    "AwardStartDate",
+                    "AwardEndDate",
+                    "AwardLevel",
+                    "AwardCategory"
+                ],
+                "additionalProperties": False,
             }
         },
         "filters": {
             "type": "object",
             "properties": {
-                "gender": {"type": "string", "enum": ["any", "male", "female", "other"]},
-                "education_level": {"type": "string", "enum": ["any", "high_school", "diploma", "bachelors", "masters", "phd"]},
-                "job_type": {"type": "string", "enum": ["any", "full_time", "part_time", "contract", "internship", "remote"]},
-                "work_mode": {"type": "string", "enum": ["any", "on_site", "hybrid", "remote"]}
+                "gender": {"type": "string", "enum": ENUM_VALUES.FILTER_GENDER_ENUM},
+                "education_level": {"type": "string", "enum": ENUM_VALUES.FILTER_EDUCATION_LEVEL_ENUM},
+                "job_type": {"type": "string", "enum": ENUM_VALUES.JOB_TYPE_ENUM},
+                "work_mode": {"type": "string", "enum": ENUM_VALUES.WORK_MODE_ENUM},
             },
             "required": ["gender", "education_level", "job_type", "work_mode"],
-            "additionalProperties": False
+            "additionalProperties": False,
         },
-
         "tags": {
-        "type": "array",
-        "items": {"type": "string"},
-        "minItems": 1,
-        "description": """Extract a list of relevant job role tags from the given resume data.
-
-        Only include job titles that are directly supported by the candidate’s experience, projects, or qualifications.
-
-        Tags must represent clear job categories such as:
-
-        Data Scientist, Machine Learning Engineer, Frontend Developer, Backend Developer, Full Stack Developer, DevOps Engineer, Cloud Engineer, Mobile Developer, Cybersecurity Specialist, UI/UX Designer, Database Administrator, Project Manager, Business Analyst, etc.
-
-        Do not include specific skills, tools, technologies, programming languages, or certifications.
-
-        Do not guess or assume unrelated roles — only include jobs clearly aligned with the resume content.
-
-        Avoid duplicates or near-duplicate roles.
-
-        Always return at least 5 distinct, job-ready role tags the person is qualified for, based on the resume.
-
-        🎯 Tags must be:
-
-        Concise
-
-        Directly inferred from resume data
-
-        Job-focused
-
-        Non-redundant
-
-        Relevant for job applications"""
-    }
-
-
-
+            "type": "array",
+            "items": {"type": "string"},
+            "minItems": 1,
+        },
     },
     "required": [
         "personalInfo",
         "aboutMe",
         "professionalSkills",
-        "workExpereince",
+        "workExperience",
         "education",
+        "workProjects",
         "links",
         "language",
         "jobPreferences",
         "preferredJobBenefits",
         "jobAchievements",
-        "filters"
+        "filters",
+        "tags"
     ],
-    "additionalProperties": False
+    "additionalProperties": False,
 }
-
 
 
 system_information = """
@@ -253,13 +314,42 @@ If not found, use the `"default"` value.
    - `mobile` should be in international format if possible (`+countrycode...`).  
    - `links.socialMedias[].link` must be a valid URL.  
    - `language.langLevel` must be one of: `Beginner`, `Intermediate`, `Fluent`, `Native`.  
-   - `degreeLevel` must match common education terms (e.g., High School, Diploma, Bachelor's, Master's, PhD).  
+   - `degreeLevel` must match common education terms (e.g., "B.Sc.", "B.A.", "M.Sc.", "M.A.", "Ph.D.").  
 
 5. **Filters Handling**:  
    - Each filter (`gender`, `education_level`, `job_type`, `work_mode`) must strictly use one of the defined `options` values.  
    - If not explicitly found in the CV text, set to `"any"`.  
 
-6. **Output Restrictions**:  
+6. **Tags Values**:
+    Extract a list of relevant job role tags from the given resume data.
+        Only include job titles that are directly supported by the candidate’s experience, projects, or qualifications.
+
+        Tags must represent clear job categories such as:
+        Data Scientist, Machine Learning Engineer, Frontend Developer, Backend Developer, Full Stack Developer, DevOps Engineer, Cloud Engineer, Mobile Developer, Cybersecurity Specialist, UI/UX Designer, Database Administrator, Project Manager, Business Analyst, etc.
+
+        Do not include specific skills, tools, technologies, programming languages, or certifications.
+        Do not guess or assume unrelated roles — only include jobs clearly aligned with the resume content.
+        Avoid duplicates or near-duplicate roles.
+        Always return at least 5 distinct, job-ready role tags the person is qualified for, based on the resume.
+
+        🎯 Tags must be: Concise, Directly inferred from resume data, Job-focused, Non-redundant, Relevant for job applications
+
+
+7. **Preserve All Information**:
+    Do **not ignore or discard any relevant information** found in the resume text.  
+    If a detail does not exactly match a specific field, fit it into the **most appropriate existing field or section**, such as:  
+    - `description` (for work experience or education)  
+    - `about` (for summary/personal statements)  
+    - `skills` (for professional or technical competencies)  
+    - `achievements` (for awards or notable accomplishments)  
+    - `projects` (if applicable)
+
+    ❌ Do **not** create any new fields.  
+    ✅ Do **repurpose existing fields** logically to capture all valuable resume content within the allowed schema.
+
+    
+
+8. **Output Restrictions**:  
    - Do not add extra fields outside of the given schema.  
    - Do not change key names.  
    - Ensure the final response is strictly valid JSON.  
@@ -283,8 +373,7 @@ Rules:
    (e.g., “ML model development” → “Machine Learning model development for business applications”), 
    you may enhance the text without changing factual accuracy.
 5. Ensure the JSON schema structure stays consistent with `resume_schema`.
-6. Add a new field `"job_relevance_score"` (0–100) for each project and skill, based on how well they match the job description.
-7. Keep formatting clean and structured for AI search and AI apply pipelines.
+6. Keep formatting clean and structured for AI search and AI apply pipelines.
 
 """
 
