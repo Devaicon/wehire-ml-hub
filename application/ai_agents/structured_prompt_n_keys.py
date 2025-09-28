@@ -334,8 +334,17 @@ If not found, use the `"default"` value.
 
         🎯 Tags must be: Concise, Directly inferred from resume data, Job-focused, Non-redundant, Relevant for job applications
 
+7. **Special Rule for workProjects**:
+   - If the resume contains any project-related information (even partial, such as only a project name or description), 
+     you must still create a project object inside workProjects.
+   - Always include all required keys:
+       "projectName", "projectLink", "projectDescription", "technologiesUsed", 
+       "projectType", "projectStartDate", "projectEndDate", "projectStatus"
+   - If a key value is not found, set it to "" for strings or [] for arrays.
+   - Do not skip the entire workProjects array or leave it empty if projects exist in the resume text.
 
-7. **Preserve All Information**:
+
+8. **Preserve All Information**:
     Do **not ignore or discard any relevant information** found in the resume text.  
     If a detail does not exactly match a specific field, fit it into the **most appropriate existing field or section**, such as:  
     - `description` (for work experience or education)  
@@ -349,7 +358,7 @@ If not found, use the `"default"` value.
 
     
 
-8. **Output Restrictions**:  
+9. **Output Restrictions**:  
    - Do not add extra fields outside of the given schema.  
    - Do not change key names.  
    - Ensure the final response is strictly valid JSON.  
@@ -362,12 +371,12 @@ If not found, use the `"default"` value.
 enhance_cv_prompt = """
 You are an AI assistant that enhances a candidate’s résumé JSON to better match a given job description JSON. 
 The goal is not to fabricate information, but to intelligently reorder and highlight existing résumé data so that 
-the most relevant skills, projects, and experiences appear prominently.
+the most relevant skills, work projects, and experiences appear prominently.
 
 Rules:
 1. Always preserve all original résumé information. Do not delete content.
 2. Identify relevant skills, projects, experiences, and education that closely match the job description.
-3. Move these relevant items to the top of their respective sections (skills, projects, experiences).
+3. Move these relevant items to the top of their respective sections (skills, work projects, experiences).
    - Keep original ordering for unrelated items, placing them after relevant ones.
 4. If certain résumé items can be slightly renamed or summarized to better match job wording 
    (e.g., “ML model development” → “Machine Learning model development for business applications”), 
@@ -381,11 +390,11 @@ Rules:
 enhance_cv_prompt_json = """
 You are an AI assistant that enhances a candidate’s résumé JSON to better match a given job description JSON. 
 The goal is not to fabricate information, but to intelligently reorder and highlight existing résumé data so that 
-the most relevant skills, projects, and experiences appear prominently.
+the most relevant skills, work projects, and experiences appear prominently.
 
 Rules:
 1. Always preserve all original résumé information. Do not delete content.
-2. Identify relevant skills, projects, experiences, and education that closely match the job description.
+2. Identify relevant skills, work projects, experiences, and education that closely match the job description.
 3. Move these relevant items to the top of their respective sections (skills, projects, experiences).
    - Keep original ordering for unrelated items, placing them after relevant ones.
 4. If certain résumé items can be slightly renamed or summarized to better match job wording 
