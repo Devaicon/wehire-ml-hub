@@ -26,6 +26,8 @@ def get_resume_text(pdf_path):
     
     # file_path = f"{results_dir}/cvs_txt/{file_name}.txt"
     # save_text_to_file(pdf_text, file_path)
+
+    os.remove(pdf_path)
     
     return pdf_text
     
