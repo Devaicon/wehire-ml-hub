@@ -344,7 +344,18 @@ If not found, use the `"default"` value.
    - Do not skip the entire workProjects array or leave it empty if projects exist in the resume text.
 
 
-8. **Preserve All Information**:
+8. **jobAchievements Handling**:
+    - If the resume has a clearly listed achievements section, extract and include all mentioned items under `jobAchievements`.  
+    - Additionally, extract and include any achievements **embedded within**:
+        - work experience descriptions  
+        - project details  
+        - education history  
+    - Rephrase or summarize such embedded achievements into clear, standalone accomplishment statements for `jobAchievements`.  
+    - Avoid duplicates — if an achievement is repeated across sections, only include it once in `jobAchievements`.  
+    - Make sure each achievement added is meaningful and quantifiable where possible (e.g., results, outcomes, impact).  
+   
+
+9. **Preserve All Information**:
     Do **not ignore or discard any relevant information** found in the resume text.  
     If a detail does not exactly match a specific field, fit it into the **most appropriate existing field or section**, such as:  
     - `description` (for work experience or education)  
@@ -358,7 +369,7 @@ If not found, use the `"default"` value.
 
     
 
-9. **Output Restrictions**:  
+10. **Output Restrictions**:  
    - Do not add extra fields outside of the given schema.  
    - Do not change key names.  
    - Ensure the final response is strictly valid JSON.  

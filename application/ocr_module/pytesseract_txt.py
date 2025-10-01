@@ -16,8 +16,8 @@ def get_text_pytesseract(pdf_path: str) -> None:
         text = pytesseract.image_to_string(img, config="--psm 6")
         full_text += f"\n\n--- Page {i+1} ---\n{text}"
 
-    with open(output_txt_path, "w", encoding="utf-8") as f:
-        f.write(full_text)
+    # with open(output_txt_path, "w", encoding="utf-8") as f:
+    #     f.write(full_text)
 
     
     return full_text
