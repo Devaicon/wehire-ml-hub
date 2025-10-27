@@ -1,3 +1,5 @@
+from pathlib import Path
+import sys
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.responses import JSONResponse, PlainTextResponse
 import os
@@ -13,6 +15,7 @@ from ai_agents.job_status import classify_email_status, check_validity_email
 from main_functions import get_resume_text
 from ai_agents.prompts_n_keys import get_matching_score_json
 from extraction.apify_scraping import extract_profile_data
+from api.interview import router as interview_router
 
 from pydantic import BaseModel
 from typing import List, Dict, Any
@@ -475,6 +478,8 @@ def check_email_validatity(
     
     return JSONResponse(json.loads(response))
 
+
+app.include_router(interview_router)
 
 if __name__ == "__main__":
     import uvicorn
