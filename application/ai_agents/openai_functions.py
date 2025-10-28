@@ -20,12 +20,10 @@ def ask_with_instruction_json(
 
         out = chat_completion.choices[0].message.content
 
-        print("response:: ", out)
-
-        # ✅ Print usage if available
-        if hasattr(chat_completion, "usage"):
-            print("=== Usage ===")
-            print(chat_completion.usage)
+        # # ✅ Print usage if available
+        # if hasattr(chat_completion, "usage"):
+        #     print("=== Usage ===")
+        #     print(chat_completion.usage)
 
         return out
 

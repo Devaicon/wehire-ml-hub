@@ -181,7 +181,7 @@ output_keys = {
 
 
 def get_matching_score_json(skills_weightage, work_experience_weightage, projects_weightage, qualification_weightage):
-
+    
     if sum([skills_weightage, work_experience_weightage, projects_weightage, qualification_weightage]) != 100:
         raise ValueError("Total weightage must be 100.")
 

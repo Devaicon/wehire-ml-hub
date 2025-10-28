@@ -211,20 +211,20 @@ resume_schema = {
                 "additionalProperties": False,
             }
         },
-        "preferredJobBenefits": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "benefits": {
-                        "type": "array",
-                        "items": {"type": "string"},
-                    }
-                },
-                "required": ["benefits"],
-                "additionalProperties": False,
-            }
-        },
+        # "preferredJobBenefits": {
+        #     "type": "array",
+        #     "items": {
+        #         "type": "object",
+        #         "properties": {
+        #             "benefits": {
+        #                 "type": "array",
+        #                 "items": {"type": "string"},
+        #             }
+        #         },
+        #         "required": ["benefits"],
+        #         "additionalProperties": False,
+        #     }
+        # },
         "jobAchievements": {
             "type": "array",
             "items": {
@@ -279,7 +279,7 @@ resume_schema = {
         "links",
         "language",
         "jobPreferences",
-        "preferredJobBenefits",
+        # "preferredJobBenefits",
         "jobAchievements",
         "filters",
         "tags"
@@ -367,9 +367,21 @@ If not found, use the `"default"` value.
     ❌ Do **not** create any new fields.  
     ✅ Do **repurpose existing fields** logically to capture all valuable resume content within the allowed schema.
 
+
     
 
-10. **Output Restrictions**:  
+10. **Additional Formatting Rules**:
+    - For each **work experience**, the `description` field must use **bullet points** instead of a paragraph format.  
+      Each bullet point should represent a distinct responsibility, task, or accomplishment.  
+      Use line breaks (`\\n- `) between bullet points for readability.  
+
+    - For the **education** section:
+        - The `fieldOfStudy` value must represent the **exact degree title** as mentioned in the resume (e.g., "Bachelor of Computer Science", "Master of Business Administration").  
+        - Do not infer or generalize — take it **strictly** from the resume text.
+
+    
+
+11. **Output Restrictions**:  
    - Do not add extra fields outside of the given schema.  
    - Do not change key names.  
    - Ensure the final response is strictly valid JSON.  
