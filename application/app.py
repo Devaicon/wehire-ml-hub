@@ -13,6 +13,9 @@ from ai_agents.job_status import classify_email_status, check_validity_email
 from main_functions import get_resume_text
 from ai_agents.prompts_n_keys import get_matching_score_json
 from extraction.apify_scraping import extract_profile_data
+from db_apis.fetch_jobs import process_jobs_in_batches
+
+from utils import config as Config
 
 from pydantic import BaseModel
 from typing import List, Dict, Any
@@ -137,6 +140,7 @@ async def parse_resume_structure(file: UploadFile = File(...)):      # ⬅️  a
     # print(f"⏱ File validation + extraction took: {end_part1 - start_part1:.4f} sec")
     # print(f"⏱ Parsing took: {end_part2 - start_part2:.4f} sec")
     # print(f"⏱ Total time: {end_total - start_total:.4f} sec")
+
 
     print("processed: returning response")
     
@@ -272,7 +276,7 @@ async def enhance_resume_with_jobs_body(payload: EnhancedRequest):
     cv_keys = enhance_resume_wrt_ai(
         resume_json=resume_str,
         system_instructions=enhanced_resume_prompts.enhance_cv_via_ai.format(resume_json=resume_str),
-        resume_schema=enhanced_resume_prompts.resume_enhanced_schema
+        resume_schema=structured_prompt_n_keys.resume_schema
     )
     return JSONResponse(json.loads(cv_keys))
 
@@ -308,7 +312,7 @@ async def call_openai_job_matcher(payload: MatchRequest):
     {jobs_json}
 
     Output keys:
-    {get_matching_score_json(skills_weightage=30, work_experience_weightage=25, projects_weightage=25, qualification_weightage=20)}
+    {get_matching_score_json(skills_weightage=Config.skills_weightage, work_experience_weightage=Config.work_experience_weightage, projects_weightage=Config.projects_weightage, qualification_weightage=Config.qualification_weightage)}
     """
 
     response = ask_with_instruction_json(instructions, "match jobs with resume data and return jobs")
@@ -316,34 +320,24 @@ async def call_openai_job_matcher(payload: MatchRequest):
 
 
 
-# @app.post("/match-jobs-db/")
+@app.post("/match-jobs-db/")
 async def call_openai_job_matcher(payload: MatchRequestDb):
-    resume_json = payload.resume_json
-    user_id = payload.user_id
+
+    try:
+        user_id = payload.user_id
+        resume_json = payload.resume_json
+
+        process_jobs_in_batches(user_id, resume_json, batch_size=Config.MAX_JOBS)
+
+    except Exception as e:
+        print("❌ Error:", str(e))
+
+        error_message = f"Error during match score process: {str(e)}"
+
+        return {"err_status": False, "err_message": f"{error_message}", "data":{"status": "failed"}}
 
 
-    sample_jobs = "JSONS/db_jobs.json"
-
-    with open(sample_jobs, "r") as f:
-        jobs_db_data = json.load(f)
-
-        jobs_json = jobs_db_data.get("data", {}).get("jobPosts", [])
-
-    instructions = f"""
-    Given the following resume data and list of job descriptions, return a list of matched jobs with detailed matching scores in form of JSON.
-
-    Resume:
-    {resume_json}
-
-    Job Descriptions:
-    {jobs_json}
-
-    Output keys:
-    {get_matching_score_json(skills_weightage=30, work_experience_weightage=25, projects_weightage=25, qualification_weightage=20)}
-    """
-
-    response = ask_with_instruction_json(instructions, "match jobs with resume data and return jobs")
-    return JSONResponse(json.loads(response))
+    return {"err_status": False, "err_message": "", "data":{"status": f"all jobs are processed using batch of 5 jobs"}}
 
 
 
