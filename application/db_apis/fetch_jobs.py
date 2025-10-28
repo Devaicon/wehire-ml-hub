@@ -63,21 +63,25 @@ def process_jobs_in_batches(user_id, resume_json, batch_size=5):
     """
     page = 1
 
-    unprocessed_jobs, total_pages = get_unprocessed_jobs(user_id, page=page)
+    match_score_criteria = get_matching_score_json(
+        skills_weightage=Config.skills_weightage,
+        work_experience_weightage=Config.work_experience_weightage,
+        projects_weightage=Config.projects_weightage,
+        qualification_weightage=Config.qualification_weightage
+    )
 
-    print("total_pages: ", total_pages)
+    while True:
+        unprocessed_jobs, total_pages = get_unprocessed_jobs(user_id, page=page)
+        if not unprocessed_jobs:
+            break  # no more jobs
 
-    match_score_criteria = get_matching_score_json(skills_weightage=Config.skills_weightage, work_experience_weightage=Config.work_experience_weightage, projects_weightage=Config.projects_weightage, qualification_weightage=Config.qualification_weightage)
+        print(f"\n📄 Page {page}/{total_pages} — Jobs fetched: {len(unprocessed_jobs)}")
+        print("match_score_criteria: ", match_score_criteria)
 
-    print("match_score_criteria: ", match_score_criteria)
-
-    while page <= total_pages:
-        
-        # Process jobs in batches of 5
+        # Process jobs in batches
         for i in range(0, len(unprocessed_jobs), batch_size):
             jobs_json = unprocessed_jobs[i:i + batch_size]
             print(f"\n🚀 Processing batch {i//batch_size + 1} (jobs {i+1}-{i+len(jobs_json)})")
-
 
             instructions = f"""
             Given the following resume data and list of job descriptions, return a list of matched jobs with detailed matching scores in form of JSON.
@@ -93,54 +97,28 @@ def process_jobs_in_batches(user_id, resume_json, batch_size=5):
             """
 
             response = ask_with_instruction_json(instructions, "match jobs with resume data and return jobs")
-
-            # print("response: ", response)
-
-
             response = json.loads(response)
 
-            print("type of response: ", type(response))
-
             for job in response["matched_jobs"]:
-
-                print("job: ", job)
-
                 job_id = job["job_id"]
                 job_title = job.get("job_title", "N/A")
                 match_score = job.get("match_score", 0)
 
-                # ----- Your job processing logic -----
-                # print(f"   ▶ Processing Job: {job_title} (ID: {job_id})")
-                time.sleep(1)  # simulate time taken for processing
-                # print("processed: ", match_score)
+                payload = {"user": user_id, "jobId": job_id, "jobScore": match_score}
+                headers = {"Content-Type": "application/json"}
 
-                # Update DB status
+                r = requests.put("https://www.vehire.ai/api/job-applying/jobpost/updateScore",
+                                 headers=headers, data=json.dumps(payload))
+                print(f"→ Updated {job_title} ({job_id}) → {r.status_code}")
 
-                url = "https://www.vehire.ai/api/job-applying/jobpost/updateScore"
+            print(f"✅ Completed batch {i//batch_size + 1}")
 
-                payload = {
-                    "user": user_id,
-                    "jobId": job_id,
-                    "jobScore": match_score
-                }
-
-                headers = {
-                    "Content-Type": "application/json"
-                }
-
-                response = requests.put(url, headers=headers, data=json.dumps(payload))
-
-                print(response.status_code)
-                print(response.text)
-
-                # break
-
-
-            print(f"✅ Completed batch {i//batch_size + 1}\n")
-
+        if page >= total_pages:
+            break
         page += 1
 
     print("🎯 All unprocessed jobs processed successfully!")
+
 
 
 # -----------------------------
