@@ -4,7 +4,7 @@ This FastAPI application provides endpoints for resume parsing, structured extra
 
 ## Setup
 
-1. **Install dependencies**  
+1. **Install dependencies**
    Make sure you have Python 3.8+ and install requirements:
    ```bash
    pip install -r requirements.txt
@@ -21,7 +21,7 @@ This FastAPI application provides endpoints for resume parsing, structured extra
 
 ### 1. Upload Resume (Extract Text)
 
-**POST** `/upload-resume/`  
+**POST** `/upload-resume/`
 Upload a PDF resume and get extracted plain text.
 
 - **Request:** `multipart/form-data` with a `file` field (PDF only)
@@ -36,7 +36,7 @@ curl -F "file=@your_resume.pdf" http://localhost:3000/upload-resume/
 
 ### 2. Parse Resume Text to Structured JSON
 
-**POST** `/parse-resume/`  
+**POST** `/parse-resume/`
 Send raw resume text and get structured JSON using OpenAI.
 
 - **Request:** `application/x-www-form-urlencoded` with `cv_text` field (resume text)
@@ -51,7 +51,7 @@ curl -X POST -d "cv_text=Paste your resume text here" http://localhost:3000/pars
 
 ### 3. Parse Resume PDF to Structured JSON (OpenAI)
 
-**POST** `/parse-resume-structured/`  
+**POST** `/parse-resume-structured/`
 Upload a PDF resume, extract text, and get structured JSON using OpenAI.
 
 - **Request:** `multipart/form-data` with a `file` field (PDF only)
@@ -66,11 +66,11 @@ curl -F "file=@your_resume.pdf" http://localhost:3000/parse-resume-structured/
 
 ### 4. Match Resume with Jobs
 
-**POST** `/match-jobs-form/`  
+**POST** `/match-jobs-form/`
 Match a structured resume with job descriptions and get top 3 matches.
 
-- **Request:**  
-  - `resume_json`: JSON string of structured resume  
+- **Request:**
+  - `resume_json`: JSON string of structured resume
   - `jobs_json`: JSON string of job descriptions
 
 - **Response:** JSON with top 3 matched jobs and matching scores

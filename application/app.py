@@ -7,18 +7,27 @@ import json
 from fastapi import Form
 from ai_agents import prompts_n_keys
 from ai_agents import structured_prompt_n_keys, enhanced_resume_prompts
-from ai_agents.openai_functions import enhance_resume_wrt_job, parse_resume_as_structured, enhance_resume_wrt_ai
+from ai_agents.openai_functions import (
+    enhance_resume_wrt_job,
+    parse_resume_as_structured,
+    enhance_resume_wrt_ai,
+)
 from ai_agents.openai_functions import ask_with_instruction_json
 from ai_agents.job_status import classify_email_status, check_validity_email
 from main_functions import get_resume_text
 from ai_agents.prompts_n_keys import get_matching_score_json
 from extraction.apify_scraping import extract_profile_data
+from api.interview import router as interview_router
+from api.resume import router as resume_router
+from api.job import router as job_router
+from api.email import router as email_router
 from db_apis.fetch_jobs import process_jobs_in_batches
 
-from utils import config as Config
+from security import config as Config
 
 from pydantic import BaseModel
 from typing import List, Dict, Any
+
 
 class MatchRequest(BaseModel):
     resume_json: Dict[str, Any]
@@ -30,7 +39,6 @@ class MatchRequestDb(BaseModel):
     resume_json: Dict[str, Any]
 
 
-
 class EnhanceRequest(BaseModel):
     resume_json: Dict[str, Any]
     job_json: Dict[str, Any]
@@ -38,8 +46,6 @@ class EnhanceRequest(BaseModel):
 
 class EnhancedRequest(BaseModel):
     resume_json: Dict[str, Any]
-
-
 
 
 app = FastAPI()
@@ -59,9 +65,8 @@ async def detailed_health_check():
         "status": "healthy",
         "service": "wehire-ml-hub",
         "version": "1.0.0",
-        "timestamp": "2025-08-30"
+        "timestamp": "2025-08-30",
     }
-
 
 
 # @app.post("/upload-resume/")
@@ -80,40 +85,43 @@ async def upload_resume(file: UploadFile = File(...)):
         extracted_text = get_resume_text(temp_path)
         return PlainTextResponse(content=extracted_text, media_type="text/plain")
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error processing the PDF: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Error processing the PDF: {str(e)}"
+        )
     finally:
         os.remove(temp_path)
-   
-
-
 
 
 # @app.post(
 #     "/parse-resume/",
 #     summary="Parse raw resume text into structured JSON",
 # )
-async def parse_resume(cv_text: str = Form(...)):      # ⬅️  accept form field
+async def parse_resume(cv_text: str = Form(...)):  # ⬅️  accept form field
     """
     Send the text received in the `cv_text` form field to OpenAI
     and return structured JSON.
     """
 
-    cv_keys = ask_with_instruction_json(instruction=prompts_n_keys.structured_info.format(output_keys=prompts_n_keys.output_keys, available_filters=prompts_n_keys.available_filters,  cv_text=cv_text), message="extract data as json")
+    cv_keys = ask_with_instruction_json(
+        instruction=prompts_n_keys.structured_info.format(
+            output_keys=prompts_n_keys.output_keys,
+            available_filters=prompts_n_keys.available_filters,
+            cv_text=cv_text,
+        ),
+        message="extract data as json",
+    )
     return JSONResponse(json.loads(cv_keys))
-
 
 
 @app.post(
     "/parse-resume-structured/",
     summary="Parse raw resume text into structured openai response",
 )
-async def parse_resume_structure(file: UploadFile = File(...)):      # ⬅️  accept form field
-
+async def parse_resume_structure(file: UploadFile = File(...)):  # ⬅️  accept form field
     start_total = time.perf_counter()
 
     # ---- Part 1: Validation, Save, Extract ----
     start_part1 = time.perf_counter()
-
 
     if not file.filename.endswith(".pdf"):
         raise HTTPException(status_code=400, detail="Only PDF files are supported.")
@@ -131,7 +139,11 @@ async def parse_resume_structure(file: UploadFile = File(...)):      # ⬅️  a
     # ---- Part 2: Parsing ----
     start_part2 = time.perf_counter()
 
-    cv_keys = parse_resume_as_structured(cv_text=extracted_text, system_instructions=structured_prompt_n_keys.system_information, resume_schema=structured_prompt_n_keys.resume_schema)
+    cv_keys = parse_resume_as_structured(
+        cv_text=extracted_text,
+        system_instructions=structured_prompt_n_keys.system_information,
+        resume_schema=structured_prompt_n_keys.resume_schema,
+    )
 
     end_part2 = time.perf_counter()
     end_total = time.perf_counter()
@@ -141,21 +153,16 @@ async def parse_resume_structure(file: UploadFile = File(...)):      # ⬅️  a
     # print(f"⏱ Parsing took: {end_part2 - start_part2:.4f} sec")
     # print(f"⏱ Total time: {end_total - start_total:.4f} sec")
 
-
     print("processed: returning response")
-    
+
     return JSONResponse(json.loads(cv_keys))
-
-
-
 
 
 @app.post(
     "/parse-linkedin-structured/",
     summary="Parse LinkedIn profile into structured openai response",
 )
-async def parse_linkedin_structure(profile_url: str): 
-
+async def parse_linkedin_structure(profile_url: str):
     response = {"error_status": False, "error_message": "", "data": {}}
 
     try:
@@ -163,16 +170,19 @@ async def parse_linkedin_structure(profile_url: str):
         print("extracted_text:", extracted_text)
     except Exception as e:
         response["error_status"] = True
-        response["error_message"] = f"Error extracting the LinkedIn profile data: {str(e)}"
+        response["error_message"] = (
+            f"Error extracting the LinkedIn profile data: {str(e)}"
+        )
         return response
 
-    cv_keys = parse_resume_as_structured(cv_text=extracted_text, system_instructions=structured_prompt_n_keys.system_information, resume_schema=structured_prompt_n_keys.resume_schema)
+    cv_keys = parse_resume_as_structured(
+        cv_text=extracted_text,
+        system_instructions=structured_prompt_n_keys.system_information,
+        resume_schema=structured_prompt_n_keys.resume_schema,
+    )
     response["data"] = json.loads(cv_keys)
     print("final response")
     return response
-
-
-
 
 
 @app.post(
@@ -180,8 +190,7 @@ async def parse_linkedin_structure(profile_url: str):
     summary="Enhance resume according to job descriptions for AI search and AI apply",
 )
 async def enhance_resume_with_jobs(
-    resume_json: str = Form(...),
-    job_json: str = Form(...)
+    resume_json: str = Form(...), job_json: str = Form(...)
 ):
     import json
 
@@ -193,7 +202,7 @@ async def enhance_resume_with_jobs(
         "aboutMe": resume_dict.get("aboutMe", {}),
         "professionalSkills": resume_dict.get("professionalSkills", {}),
         "workExperience": resume_dict.get("workExperience", []),
-        "workProjects": resume_dict.get("workProjects", [])
+        "workProjects": resume_dict.get("workProjects", []),
     }
 
     resume_str = json.dumps(resume_subset, indent=2)
@@ -203,7 +212,7 @@ async def enhance_resume_with_jobs(
         resume_json=resume_str,
         job_json=job_json,
         system_instructions=structured_prompt_n_keys.enhance_cv_prompt,
-        resume_schema=structured_prompt_n_keys.resume_schema
+        resume_schema=structured_prompt_n_keys.resume_schema,
     )
 
     # Step 4: Parse AI response into dict
@@ -216,9 +225,6 @@ async def enhance_resume_with_jobs(
 
     # Step 6: Return full enhanced resume
     return JSONResponse(resume_dict)
-
-
-
 
 
 @app.post(
@@ -237,7 +243,7 @@ async def enhance_resume_with_jobs_body(payload: EnhanceRequest):
         "aboutMe": resume_dict.get("aboutMe", {}),
         "professionalSkills": resume_dict.get("professionalSkills", {}),
         "workExperience": resume_dict.get("workExperience", []),
-        "workProjects": resume_dict.get("workProjects", [])
+        "workProjects": resume_dict.get("workProjects", []),
     }
 
     resume_str = json.dumps(resume_subset, indent=2)
@@ -248,7 +254,7 @@ async def enhance_resume_with_jobs_body(payload: EnhanceRequest):
         resume_json=resume_str,
         job_json=job_str,
         system_instructions=structured_prompt_n_keys.enhance_cv_prompt,
-        resume_schema=structured_prompt_n_keys.resume_schema
+        resume_schema=structured_prompt_n_keys.resume_schema,
     )
 
     # Step 4: Parse AI response
@@ -263,26 +269,23 @@ async def enhance_resume_with_jobs_body(payload: EnhanceRequest):
     return JSONResponse(resume_dict)
 
 
-
 @app.post(
     "/enhance_resume_ai/",
-    summary="Generate an AI-enhanced, ATS-optimized resume with professional improvements and missing data insights"
+    summary="Generate an AI-enhanced, ATS-optimized resume with professional improvements and missing data insights",
 )
 async def enhance_resume_with_jobs_body(payload: EnhancedRequest):
     import json
-    resume_str = json.dumps(payload.resume_json, indent=2)
 
+    resume_str = json.dumps(payload.resume_json, indent=2)
 
     cv_keys = enhance_resume_wrt_ai(
         resume_json=resume_str,
-        system_instructions=enhanced_resume_prompts.enhance_cv_via_ai.format(resume_json=resume_str),
-        resume_schema=structured_prompt_n_keys.resume_schema
+        system_instructions=enhanced_resume_prompts.enhance_cv_via_ai.format(
+            resume_json=resume_str
+        ),
+        resume_schema=structured_prompt_n_keys.resume_schema,
     )
     return JSONResponse(json.loads(cv_keys))
-
-
-
-
 
 
 # from linkedin_scraping import main
@@ -292,9 +295,6 @@ async def enhance_resume_with_jobs_body(payload: EnhancedRequest):
 #     response = main(profile_url)
 
 #     return response
-
-
-
 
 
 @app.post("/match-jobs-form/")
@@ -315,14 +315,14 @@ async def call_openai_job_matcher(payload: MatchRequest):
     {get_matching_score_json(skills_weightage=Config.skills_weightage, work_experience_weightage=Config.work_experience_weightage, projects_weightage=Config.projects_weightage, qualification_weightage=Config.qualification_weightage)}
     """
 
-    response = ask_with_instruction_json(instructions, "match jobs with resume data and return jobs")
+    response = ask_with_instruction_json(
+        instructions, "match jobs with resume data and return jobs"
+    )
     return JSONResponse(json.loads(response))
-
 
 
 @app.post("/match-jobs-db/")
 async def call_openai_job_matcher(payload: MatchRequestDb):
-
     try:
         user_id = payload.user_id
         resume_json = payload.resume_json
@@ -334,12 +334,17 @@ async def call_openai_job_matcher(payload: MatchRequestDb):
 
         error_message = f"Error during match score process: {str(e)}"
 
-        return {"err_status": False, "err_message": f"{error_message}", "data":{"status": "failed"}}
+        return {
+            "err_status": False,
+            "err_message": f"{error_message}",
+            "data": {"status": "failed"},
+        }
 
-
-    return {"err_status": False, "err_message": "", "data":{"status": f"all jobs are processed using batch of 5 jobs"}}
-
-
+    return {
+        "err_status": False,
+        "err_message": "",
+        "data": {"status": "all jobs are processed using batch of 5 jobs"},
+    }
 
 
 @app.post(
@@ -354,10 +359,10 @@ async def generate_job_email(job_json: str, resume_json: str):
 
     ### Input
 
-    **Resume Data:**  
+    **Resume Data:**
     {resume_data}
 
-    **Job Description:**  
+    **Job Description:**
     {job_data}
 
     ---
@@ -373,43 +378,43 @@ async def generate_job_email(job_json: str, resume_json: str):
 
     - **Subject line**:
     * Must match *one of these formats*:
-        1. Application for [Job Title] – [Your Full Name]  
-        2. [Job Title] Position – [Your Name]  
-        3. [Your Name] – [Job Title] Application – [X+ Years Experience]  
-        4. Experienced [Role] Applying for [Role] Role – [Your Name]  
-        5. Application: [Role] – [Key qualifier] – [Your Name]  
-    * Include the candidate’s name and job title (and job reference/ID if provided).  
-    * Be clear, professional. Avoid vague or generic phrases.  
+        1. Application for [Job Title] – [Your Full Name]
+        2. [Job Title] Position – [Your Name]
+        3. [Your Name] – [Job Title] Application – [X+ Years Experience]
+        4. Experienced [Role] Applying for [Role] Role – [Your Name]
+        5. Application: [Role] – [Key qualifier] – [Your Name]
+    * Include the candidate’s name and job title (and job reference/ID if provided).
+    * Be clear, professional. Avoid vague or generic phrases.
     * Keep concise (approx 6-10 words) so it isn’t truncated, especially on mobile.
 
     - **Salutation / Greeting**:
-    * If hiring manager or contact person is known, address by name (“Dear Ms. Smith,” etc.).  
+    * If hiring manager or contact person is known, address by name (“Dear Ms. Smith,” etc.).
     * If not, “Dear Hiring Manager,” or similar formal greeting.
 
     - **Opening paragraph**:
-    * State clearly which position you are applying for, and optionally where you found the listing.  
+    * State clearly which position you are applying for, and optionally where you found the listing.
     * Introduce yourself briefly.
 
     - **Body**:
-    * Highlight top 1-3 relevant skills, experiences, or achievements from the resume that map to requirements in the job description.  
-    * Use specific examples (metrics, results if possible).  
+    * Highlight top 1-3 relevant skills, experiences, or achievements from the resume that map to requirements in the job description.
+    * Use specific examples (metrics, results if possible).
     * Show alignment with the company or job (why this role, what you bring).
 
     - **Attachments and Documents**:
-    * Mention that you’ve attached your resume (and cover letter if applicable).  
+    * Mention that you’ve attached your resume (and cover letter if applicable).
     * Use professional file names and suitable format (PDF if possible).
 
     - **Tone, Language, Style**:
-    * Polite, formal, respectful; avoid slang, emojis, abbreviations.  
-    * Use active voice.  
+    * Polite, formal, respectful; avoid slang, emojis, abbreviations.
+    * Use active voice.
     * Proofread: grammar, spelling, consistency.
 
     - **Length / Structure**:
-    * Body should be 3-4 short paragraphs. Total ~150-200 words.  
+    * Body should be 3-4 short paragraphs. Total ~150-200 words.
     * Use paragraph breaks for readability.
 
     - **Closing / Signature**:
-    * Close with a courteous line (e.g. “Thank you for considering my application. I look forward to the possibility of discussing this opportunity.”)  
+    * Close with a courteous line (e.g. “Thank you for considering my application. I look forward to the possibility of discussing this opportunity.”)
     * Include full name, email, phone number in signature.
 
     ---
@@ -436,40 +441,39 @@ async def generate_job_email(job_json: str, resume_json: str):
     )
 
     message = "Write subject and email content for job application"
-    
+
     # Call your OpenAI wrapper
     response = ask_with_instruction_json(formatted_instructions, message)
-    
+
     # Attach job_id to final JSON
     response_json = json.loads(response)
 
     return JSONResponse(response_json)
 
 
-
-
-
 @app.post("/classify-job-status")
-def classify_email(
-    email_content: str = Form(...)
-    ):
-    response =  classify_email_status(email_content)
+def classify_email(email_content: str = Form(...)):
+    response = classify_email_status(email_content)
 
     return JSONResponse(json.loads(response))
-
 
 
 @app.post("/check-validity-email")
 def check_email_validatity(
-    company_email_content: str = Form(...),
-    user_response_content: str = Form(...)
+    company_email_content: str = Form(...), user_response_content: str = Form(...)
 ):
-
     response = check_validity_email(company_email_content, user_response_content)
-    
+
     return JSONResponse(json.loads(response))
+
+
+app.include_router(resume_router)
+app.include_router(job_router)
+app.include_router(email_router)
+app.include_router(interview_router)
 
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8000)

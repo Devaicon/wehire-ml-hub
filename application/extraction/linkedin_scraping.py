@@ -5,11 +5,7 @@ from datetime import datetime
 from typing import List, Dict, Optional, Any
 
 
-
-
-def collect_profile_info(
-    self, profile_urls: List[Dict[str, str]]
-) -> Optional[bool]:
+def collect_profile_info(self, profile_urls: List[Dict[str, str]]) -> Optional[bool]:
     try:
         start_time = datetime.now()
         print(
@@ -44,6 +40,7 @@ def collect_profile_info(
         print(f"\nERROR: {str(e)}")
         return None
 
+
 def _trigger_collection(
     self, profile_urls: List[Dict[str, str]]
 ) -> Optional[Dict[str, Any]]:
@@ -62,6 +59,7 @@ def _trigger_collection(
         print(f"Failed to trigger collection: {str(e)}")
         return None
 
+
 def _check_status(self, snapshot_id: str) -> str:
     try:
         response = requests.get(
@@ -73,6 +71,7 @@ def _check_status(self, snapshot_id: str) -> str:
         return response.json().get("status", "error")
     except requests.exceptions.RequestException:
         return "error"
+
 
 def _get_data(self, snapshot_id: str) -> Optional[Dict[str, Any]]:
     try:
@@ -87,6 +86,7 @@ def _get_data(self, snapshot_id: str) -> Optional[Dict[str, Any]]:
     except requests.exceptions.RequestException:
         return None
 
+
 def _save_data(
     self, data: Dict[str, Any], filename: str = "profiles_by_url.json"
 ) -> None:
@@ -99,9 +99,7 @@ def _save_data(
 
 
 def main():
-    profiles = [
-        {"url": "https://www.linkedin.com/in/syed-ali-waqar-a64b49255"}
-    ]
+    profiles = [{"url": "https://www.linkedin.com/in/syed-ali-waqar-a64b49255"}]
 
     collect_profile_info(profiles)
 

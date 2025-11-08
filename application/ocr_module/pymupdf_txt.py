@@ -1,6 +1,7 @@
 import fitz  # PyMuPDF
 from pathlib import Path
 
+
 def extract_text_from_pdf(pdf_path: Path) -> None:
     """
     Extracts text from a PDF using PyMuPDF and saves it as a .txt file in the same directory.

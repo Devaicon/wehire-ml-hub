@@ -1,7 +1,6 @@
 from linkedin_api import Linkedin
-import pandas as pd
 import re
-from utils import config as Config
+from security import config as Config
 
 # --- LOGIN ---
 
@@ -28,7 +27,7 @@ def extract_profile_data(profile_url):
         "summary": profile.get("summary", ""),
         "experience": profile.get("experience", []),
         "education": profile.get("education", []),
-        "skills": profile.get("skills", [])
+        "skills": profile.get("skills", []),
     }
 
     print("\n--- Extracted Profile Data ---")

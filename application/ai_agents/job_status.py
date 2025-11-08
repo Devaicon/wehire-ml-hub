@@ -1,7 +1,6 @@
 from openai import OpenAI
-import json
-from utils import config as Config
-from fastapi import FastAPI, Form
+from security import config as Config
+from fastapi import Form
 
 client = OpenAI(api_key=Config.API_KEY)
 
@@ -9,16 +8,16 @@ from ai_agents.openai_functions import ask_with_instruction_json
 
 
 system_prompt = """
-You are an assistant for an automated job application management system. 
-Your task is to classify incoming job application-related emails into one of four statuses 
+You are an assistant for an automated job application management system.
+Your task is to classify incoming job application-related emails into one of four statuses
 and generate a short, clear notification message for the candidate.
 
 ### STATUS DEFINITIONS:
-- checked: The company has acknowledged, confirmed receipt, or reviewed the application 
+- checked: The company has acknowledged, confirmed receipt, or reviewed the application
            (but no further action or decision is mentioned).
-- required: The company explicitly requests additional documents, actions, or information 
+- required: The company explicitly requests additional documents, actions, or information
             (e.g., resume, portfolio, certificates, references, ID proof, assessments).
-- accepted: The application has been approved, shortlisted, the candidate is invited for 
+- accepted: The application has been approved, shortlisted, the candidate is invited for
             interview/next round, or hired.
 - rejected: The application is declined or the candidate is not moving forward.
 
@@ -45,22 +44,21 @@ Respond ONLY with a JSON object that matches this schema:
 
 
 def classify_email_status(email_content: str, model: str = Config.MODEL):
-
     message = "Classify job application emails as checked, required, accepted, or rejected; return JSON {status, notification}; notification must be one short polite line in second-person; if required, extract the exact request(s) from the email."
 
     system_prompt = f"""
-    You are an assistant for an automated job application management system. 
-    Your task is to classify incoming job application-related emails into one of four statuses 
+    You are an assistant for an automated job application management system.
+    Your task is to classify incoming job application-related emails into one of four statuses
     and generate a short, clear notification message for the candidate.
 
     ### STATUS DEFINITIONS:
-    - checked: The company has acknowledged, confirmed receipt, or reviewed the application 
+    - checked: The company has acknowledged, confirmed receipt, or reviewed the application
             (but no further action or decision is mentioned).
-    - required: The company explicitly requests additional documents, actions, or information 
+    - required: The company explicitly requests additional documents, actions, or information
                 (e.g., resume, portfolio, certificates, references, ID proof, assessments, forms).
-                This status is ONLY used when the email contains a clear request for something specific. 
+                This status is ONLY used when the email contains a clear request for something specific.
                 Be very careful to extract exactly what is requested from the email — no assumptions.
-    - accepted: The application has been approved, shortlisted, the candidate is invited for 
+    - accepted: The application has been approved, shortlisted, the candidate is invited for
                 interview/next round, or hired.
     - rejected: The application is declined or the candidate is not moving forward.
 
@@ -72,11 +70,11 @@ def classify_email_status(email_content: str, model: str = Config.MODEL):
     - required → "The company needs additional information: [insert requirement(s) exactly as stated in the email]."
     - accepted → "Congratulations! Your application has been accepted."
     - rejected → "We’re sorry, your application was not successful."
-    - For **required status**, never summarize vaguely — copy the specific requirement(s) mentioned 
-    (e.g., "updated resume", "two references", "portfolio link", "government ID copy").  
+    - For **required status**, never summarize vaguely — copy the specific requirement(s) mentioned
+    (e.g., "updated resume", "two references", "portfolio link", "government ID copy").
     If multiple requirements are listed, include all of them in the notification.
 
-    Given Input Email Content: 
+    Given Input Email Content:
     {email_content}
 
     ### OUTPUT FORMAT:
@@ -87,18 +85,13 @@ def classify_email_status(email_content: str, model: str = Config.MODEL):
     }}
     """
 
-
     result = ask_with_instruction_json(system_prompt, message)
 
     return result
 
 
-
-
-
 def check_validity_email(
-    company_email_content: str = Form(...),
-    user_response_content: str = Form(...)
+    company_email_content: str = Form(...), user_response_content: str = Form(...)
 ):
     prompt = f"""
     You are an AI email validator.

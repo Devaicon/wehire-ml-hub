@@ -5,6 +5,29 @@ FILTER_EDUCATION_LEVEL_ENUM = ["any", *DEGREE_LEVEL_ENUM]
 LANGUAGE_LEVEL_ENUM = ["Beginner", "Intermediate", "Fluent", "Native"]
 JOB_TYPE_ENUM = ["any", "full_time", "part_time", "contract", "internship", "remote"]
 WORK_MODE_ENUM = ["any", "on_site", "hybrid", "remote"]
-PROJECT_TYPE_ENUM = ["Personal", "Academic", "Professional", "Open Source", "Team", "Solo"]
-AWARD_LEVEL_ENUM = ["International", "National", "Regional", "University", "Department", "Local"]
-AWARD_CATEGORY_ENUM = ["Academic Excellence", "Scholarship", "Research", "Leadership", "Community Service", "Athletic", "Professional", "Competition"]
+PROJECT_TYPE_ENUM = [
+    "Personal",
+    "Academic",
+    "Professional",
+    "Open Source",
+    "Team",
+    "Solo",
+]
+AWARD_LEVEL_ENUM = [
+    "International",
+    "National",
+    "Regional",
+    "University",
+    "Department",
+    "Local",
+]
+AWARD_CATEGORY_ENUM = [
+    "Academic Excellence",
+    "Scholarship",
+    "Research",
+    "Leadership",
+    "Community Service",
+    "Athletic",
+    "Professional",
+    "Competition",
+]

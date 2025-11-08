@@ -4,3 +4,4 @@ __pycache__
 sample.pdf
 .env
 linkedin_profile.txt
+application/public/static/uploads/*
