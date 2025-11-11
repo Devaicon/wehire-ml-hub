@@ -67,14 +67,7 @@ async def enhance_resume_with_jobs_body(
     resume_dict = payload.resume_json
     job_dict = payload.job_json
 
-    resume_subset = {
-        "aboutMe": resume_dict.get("aboutMe", {}),
-        "professionalSkills": resume_dict.get("professionalSkills", {}),
-        "workExperience": resume_dict.get("workExperience", []),
-        "workProjects": resume_dict.get("workProjects", []),
-    }
-
-    resume_str = json.dumps(resume_subset, indent=2)
+    resume_str = json.dumps(resume_dict, indent=2)
     job_str = json.dumps(job_dict, indent=2)
 
     response = enhance_resume_wrt_job(

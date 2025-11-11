@@ -40,7 +40,9 @@ def get_resume_enhancement_schema() -> dict:
                     "lastName",
                     "email",
                     "mobile",
+                    "maritalStatus",
                     "city",
+                    "dob",
                     "gender",
                 ],
                 "additionalProperties": False,
@@ -59,7 +61,7 @@ def get_resume_enhancement_schema() -> dict:
                 "required": ["skills"],
                 "additionalProperties": False,
             },
-            "workExpereince": {
+            "workExperience": {  # ✅ corrected key spelling
                 "type": "array",
                 "items": {
                     "type": "object",
@@ -75,7 +77,9 @@ def get_resume_enhancement_schema() -> dict:
                         "jobTitle",
                         "companyName",
                         "startEmploymentPeriod",
+                        "endEmploymentPeriod",
                         "currentStatus",
+                        "description",
                     ],
                     "additionalProperties": False,
                 },
@@ -107,7 +111,9 @@ def get_resume_enhancement_schema() -> dict:
                         "universityName",
                         "degreeLevel",
                         "startDateOfStudy",
+                        "endDateOfStudy",
                         "currentStatus",
+                        "description",
                     ],
                     "additionalProperties": False,
                 },
@@ -121,7 +127,7 @@ def get_resume_enhancement_schema() -> dict:
                             "type": "object",
                             "properties": {
                                 "title": {"type": "string"},
-                                "link": {"type": "string", "format": "uri"},
+                                "link": {"type": "string"},
                             },
                             "required": ["title", "link"],
                             "additionalProperties": False,
@@ -175,7 +181,13 @@ def get_resume_enhancement_schema() -> dict:
                             "items": {"type": "string"},
                         },
                     },
-                    "required": ["jobCategory"],
+                    "required": [
+                        "jobCategory",
+                        "jobCategorySalary",
+                        "customSalary",
+                        "acceptableContract",
+                        "seniorityLevel",
+                    ],
                     "additionalProperties": False,
                 },
             },
@@ -198,7 +210,10 @@ def get_resume_enhancement_schema() -> dict:
                 "items": {
                     "type": "object",
                     "properties": {
-                        "achievements": {"type": "array", "items": {"type": "string"}}
+                        "achievements": {
+                            "type": "array",
+                            "items": {"type": "string"},
+                        }
                     },
                     "required": ["achievements"],
                     "additionalProperties": False,
@@ -215,11 +230,13 @@ def get_resume_enhancement_schema() -> dict:
                         "type": "string",
                         "enum": [
                             "any",
-                            "high_school",
-                            "diploma",
-                            "bachelors",
-                            "masters",
-                            "phd",
+                            "B.Sc.",
+                            "B.A.",
+                            "M.Sc.",
+                            "M.A.",
+                            "Ph.D.",
+                            "Associate",
+                            "Diploma",
                         ],
                     },
                     "job_type": {
@@ -238,7 +255,12 @@ def get_resume_enhancement_schema() -> dict:
                         "enum": ["any", "on_site", "hybrid", "remote"],
                     },
                 },
-                "required": ["gender", "education_level", "job_type", "work_mode"],
+                "required": [
+                    "gender",
+                    "education_level",
+                    "job_type",
+                    "work_mode",
+                ],
                 "additionalProperties": False,
             },
             "tags": {
@@ -249,14 +271,17 @@ def get_resume_enhancement_schema() -> dict:
             },
             "missing_data_to_improve": {
                 "type": "string",
-                "description": "Short, concise notes about missing or incomplete resume data (e.g., 'About section missing, no certifications, weak job descriptions').",
+                "description": (
+                    "Short, concise notes about missing or incomplete resume data "
+                    "(e.g., 'About section missing, no certifications, weak job descriptions')."
+                ),
             },
         },
         "required": [
             "personalInfo",
             "aboutMe",
             "professionalSkills",
-            "workExpereince",
+            "workExperience",
             "education",
             "links",
             "language",
@@ -264,6 +289,7 @@ def get_resume_enhancement_schema() -> dict:
             # "preferredJobBenefits",
             "jobAchievements",
             "filters",
+            "tags",
             "missing_data_to_improve",
         ],
         "additionalProperties": False,

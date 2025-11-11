@@ -131,13 +131,7 @@ def enhance_resume_wrt_job(resume_json: str, job_json: str) -> EnhancedResumeRes
 
     resume_jsonify = json.dumps(resume_subset, indent=2)
 
-    # Step 3: Call AI enhancement with job description
-    # cv_keys = enhance_resume_wrt_job(
-    #     resume_json=resume_str,
-    #     job_json=job_json,
-    # system_instructions=structured_prompt_n_keys.enhance_cv_prompt,
-    # resume_schema=structured_prompt_n_keys.resume_schema
-    # )
+
     messages = [
         {"role": "system", "content": JOB_SYSTEM_PROMPT},
         {"role": "user", "content": f"{resume_jsonify}" + "\n\n" + job_json},

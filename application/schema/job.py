@@ -87,12 +87,18 @@ def get_matching_score_json(
                                             "items": {"type": "string"},
                                             "description": "Skills possessed by the candidate.",
                                         },
-                                        "score": {"type": "number"},
+                                        "score": {
+                                            "type": "number",
+                                            "description": "Score for skills matching."
+                                        },
                                         "max_score": {
                                             "type": "number",
-                                            "description": "Maximum possible score for skills matching.",
+                                            "description": f"Maximum possible score for skills matching. Must be {skills_weightage}.",
                                         },
-                                        "notes": {"type": "string"},
+                                        "notes": {
+                                            "type": "string",
+                                            "description": "Notes about skills matching."
+                                        },
                                     },
                                     "required": [
                                         "requirement",
@@ -101,15 +107,31 @@ def get_matching_score_json(
                                         "max_score",
                                         "notes",
                                     ],
+                                    "additionalProperties": False,
                                 },
                                 "work_experience": {
                                     "type": "object",
                                     "properties": {
-                                        "requirement": {"type": "string"},
-                                        "candidate": {"type": "string"},
-                                        "score": {"type": "number"},
-                                        "max_score": {"type": "number"},
-                                        "notes": {"type": "string"},
+                                        "requirement": {
+                                            "type": "string",
+                                            "description": "Work experience requirement."
+                                        },
+                                        "candidate": {
+                                            "type": "string",
+                                            "description": "Candidate's work experience."
+                                        },
+                                        "score": {
+                                            "type": "number",
+                                            "description": "Score for work experience matching."
+                                        },
+                                        "max_score": {
+                                            "type": "number",
+                                            "description": f"Maximum possible score for work experience. Must be {work_experience_weightage}.",
+                                        },
+                                        "notes": {
+                                            "type": "string",
+                                            "description": "Notes about work experience matching."
+                                        },
                                     },
                                     "required": [
                                         "requirement",
@@ -118,18 +140,32 @@ def get_matching_score_json(
                                         "max_score",
                                         "notes",
                                     ],
+                                    "additionalProperties": False,
                                 },
                                 "projects": {
                                     "type": "object",
                                     "properties": {
-                                        "requirement": {"type": "string"},
+                                        "requirement": {
+                                            "type": "string",
+                                            "description": "Projects requirement."
+                                        },
                                         "candidate": {
                                             "type": "array",
                                             "items": {"type": "string"},
+                                            "description": "Candidate's relevant projects."
                                         },
-                                        "score": {"type": "number"},
-                                        "max_score": {"type": "number"},
-                                        "notes": {"type": "string"},
+                                        "score": {
+                                            "type": "number",
+                                            "description": "Score for projects matching."
+                                        },
+                                        "max_score": {
+                                            "type": "number",
+                                            "description": f"Maximum possible score for projects. Must be {projects_weightage}.",
+                                        },
+                                        "notes": {
+                                            "type": "string",
+                                            "description": "Notes about projects matching."
+                                        },
                                     },
                                     "required": [
                                         "requirement",
@@ -138,15 +174,31 @@ def get_matching_score_json(
                                         "max_score",
                                         "notes",
                                     ],
+                                    "additionalProperties": False,
                                 },
                                 "qualification": {
                                     "type": "object",
                                     "properties": {
-                                        "requirement": {"type": "string"},
-                                        "candidate": {"type": "string"},
-                                        "score": {"type": "number"},
-                                        "max_score": {"type": "number"},
-                                        "notes": {"type": "string"},
+                                        "requirement": {
+                                            "type": "string",
+                                            "description": "Qualification requirement."
+                                        },
+                                        "candidate": {
+                                            "type": "string",
+                                            "description": "Candidate's qualification."
+                                        },
+                                        "score": {
+                                            "type": "number",
+                                            "description": "Score for qualification matching."
+                                        },
+                                        "max_score": {
+                                            "type": "number",
+                                            "description": f"Maximum possible score for qualification. Must be {qualification_weightage}.",
+                                        },
+                                        "notes": {
+                                            "type": "string",
+                                            "description": "Notes about qualification matching."
+                                        },
                                     },
                                     "required": [
                                         "requirement",
@@ -155,6 +207,7 @@ def get_matching_score_json(
                                         "max_score",
                                         "notes",
                                     ],
+                                    "additionalProperties": False,
                                 },
                             },
                             "required": [
@@ -163,9 +216,11 @@ def get_matching_score_json(
                                 "projects",
                                 "qualification",
                             ],
+                            "additionalProperties": False,
                         },
                     },
                     "required": ["job_id", "job_title", "match_score", "match_details"],
+                    "additionalProperties": False,
                 },
             }
         },
