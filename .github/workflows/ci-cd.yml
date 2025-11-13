@@ -1,7 +1,7 @@
 name: Deploy Backend Workflow
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "dev-interview" ]
   workflow_dispatch:
 
 env:
