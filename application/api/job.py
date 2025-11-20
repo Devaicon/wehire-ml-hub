@@ -2,6 +2,7 @@ from fastapi import APIRouter
 from api.services.job import generate_job_mail, resume_with_job_matcher
 from db_apis.fetch_jobs import process_jobs_in_batches
 from schema.job import (
+    GenerateJobMailRequest,
     JobMailResponse,
     JobMatchDbErrorResponse,
     JobMatchDbResponse,
@@ -26,8 +27,8 @@ async def call_openai_job_matcher(payload: JobMatchRequest) -> JobMatchResponse:
     summary="Generate email subject & content from CV + Job detail",
     response_model=JobMailResponse,
 )
-async def generate_job_email(job_json: str, resume_json: str):
-    response = generate_job_mail(job_json=job_json, resume_json=resume_json)
+async def generate_job_email(request: GenerateJobMailRequest):
+    response = generate_job_mail(job_json=request.job_json, resume_json=request.resume_json)
     return response
 
 

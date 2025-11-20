@@ -2,6 +2,7 @@ from typing import List, Optional, Union
 from pydantic import BaseModel, Field
 from utils.get_enum_values import get_enum_values
 from enums.resume_parser import (
+    EmploymentTypeEnum,
     FilterEducationLevelEnum,
     FilterGenderEnum,
     GenderEnum,
@@ -174,7 +175,10 @@ def get_resume_extraction_schema() -> dict:
             "aboutMe": {
                 "type": "object",
                 "properties": {
-                    "about": {"type": "string"},
+                    "about": {
+                        "type": "string",
+                        "description": "A brief explain about the candidate, highlighting key skills, experiences, and career objectives."
+                    },
                 },
                 "required": ["about"],
                 "additionalProperties": False,
@@ -198,11 +202,14 @@ def get_resume_extraction_schema() -> dict:
                         "jobTitle": {"type": "string"},
                         "companyName": {"type": "string"},
                         "location": {"type": "string"},
-                        "employmentType": {"type": "string"},
+                        "employmentType": {"type": "string", "enum": get_enum_values(EmploymentTypeEnum)},
                         "startEmploymentPeriod": {"type": "string"},
                         "endEmploymentPeriod": {"type": "string"},
                         "currentStatus": {"type": "boolean"},
-                        "description": {"type": "string"},
+                        "description": {
+                            "type": "string",
+                            "description": "Explain the detailed description of roles and responsibilities."
+                        },
                     },
                     "required": [
                         "jobTitle",

@@ -24,11 +24,15 @@ class JobMatchDbRequest(BaseModel):
 class JobMatchDbResponse(BaseModel):
     status: str
 
+class GenerateJobMailRequest(BaseModel):
+    job_json: dict[str, Any]
+    resume_json: dict[str, Any]
 
 class JobMatchDbErrorResponse(BaseModel):
     err_status: bool
     err_message: str
     data: dict
+
 
 
 def get_matching_score_json(

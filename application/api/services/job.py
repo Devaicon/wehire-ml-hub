@@ -55,17 +55,13 @@ def resume_with_job_matcher(payload: JobMatchRequest) -> JobMatchResponse:
     return JobMatchResponse(data=json.loads(content))
 
 
-def generate_job_mail(job_json: str, resume_json: str) -> JobMailResponse:
-    # job_json will be a dict in string form, so we parse it to extract job_id
-    job_data = json.loads(job_json)
-    resume_data = json.loads(resume_json)
-
+def generate_job_mail(job_json: dict, resume_json: dict) -> JobMailResponse:
     messages = [
         {
             "role": "system",
             "content": EMAIL_SYSTEM_PROMPT.format(
-                resume_data=json.dumps(resume_data, indent=2),
-                job_data=json.dumps(job_data, indent=2),
+                resume_data=json.dumps(job_json, indent=2),
+                job_data=json.dumps(resume_json, indent=2),
             ),
         },
         {

@@ -5,6 +5,7 @@ class GenderEnum(str, Enum):
     MALE = "male"
     FEMALE = "female"
     OTHER = "other"
+    EMPTY = ""
 
 
 class FilterGenderEnum(str, Enum):
@@ -12,6 +13,7 @@ class FilterGenderEnum(str, Enum):
     MALE = "male"
     FEMALE = "female"
     OTHER = "other"
+    EMPTY = ""
 
 
 class DegreeLevelEnum(str, Enum):
@@ -22,6 +24,7 @@ class DegreeLevelEnum(str, Enum):
     PHD = "Ph.D."
     ASSOCIATE = "Associate"
     DIPLOMA = "Diploma"
+    EMPTY = ""
 
 
 class FilterEducationLevelEnum(str, Enum):
@@ -33,6 +36,7 @@ class FilterEducationLevelEnum(str, Enum):
     PHD = "Ph.D."
     ASSOCIATE = "Associate"
     DIPLOMA = "Diploma"
+    EMPTY = ""
 
 
 class LanguageLevelEnum(str, Enum):
@@ -40,6 +44,7 @@ class LanguageLevelEnum(str, Enum):
     INTERMEDIATE = "Intermediate"
     FLUENT = "Fluent"
     NATIVE = "Native"
+    EMPTY = ""
 
 
 class JobTypeEnum(str, Enum):
@@ -49,6 +54,7 @@ class JobTypeEnum(str, Enum):
     CONTRACT = "contract"
     INTERNSHIP = "internship"
     REMOTE = "remote"
+    EMPTY = ""
 
 
 class WorkModeEnum(str, Enum):
@@ -56,6 +62,7 @@ class WorkModeEnum(str, Enum):
     ON_SITE = "on_site"
     HYBRID = "hybrid"
     REMOTE = "remote"
+    EMPTY = ""
 
 
 class ProjectTypeEnum(str, Enum):
@@ -65,6 +72,7 @@ class ProjectTypeEnum(str, Enum):
     OPEN_SOURCE = "Open Source"
     TEAM = "Team"
     SOLO = "Solo"
+    EMPTY = ""
 
 
 class AwardLevelEnum(str, Enum):
@@ -74,6 +82,7 @@ class AwardLevelEnum(str, Enum):
     UNIVERSITY = "University"
     DEPARTMENT = "Department"
     LOCAL = "Local"
+    EMPTY = ""
 
 
 class AwardCategoryEnum(str, Enum):
@@ -85,3 +94,14 @@ class AwardCategoryEnum(str, Enum):
     ATHLETIC = "Athletic"
     PROFESSIONAL = "Professional"
     COMPETITION = "Competition"
+    EMPTY = ""
+
+class EmploymentTypeEnum(str, Enum):
+    FULL_TIME = "Full-time"
+    PART_TIME = "Part-time"
+    CONTRACT = "Contract"
+    TEMPORARY = "Temporary"
+    INTERN = "Intern"
+    VOLUNTEER = "Volunteer"
+    FREELANCE = "Freelance"
+    EMPTY = ""

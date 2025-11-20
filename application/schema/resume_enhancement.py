@@ -1,6 +1,9 @@
 from typing import Any
 from pydantic import BaseModel
 
+from enums.resume_parser import DegreeLevelEnum, EmploymentTypeEnum, FilterEducationLevelEnum, FilterGenderEnum, GenderEnum, JobTypeEnum, LanguageLevelEnum, WorkModeEnum
+from utils.get_enum_values import get_enum_values
+
 
 class EnhanceResumeRequest(BaseModel):
     resume_json: dict[str, Any]
@@ -33,7 +36,7 @@ def get_resume_enhancement_schema() -> dict:
                     "maritalStatus": {"type": "string"},
                     "city": {"type": "string"},
                     "dob": {"type": "string"},
-                    "gender": {"type": "string"},
+                    "gender": {"type": "string", "enum": get_enum_values(GenderEnum)},
                 },
                 "required": [
                     "firstName",
@@ -49,7 +52,12 @@ def get_resume_enhancement_schema() -> dict:
             },
             "aboutMe": {
                 "type": "object",
-                "properties": {"about": {"type": "string"}},
+                "properties": {
+                    "about": {
+                    "type": "string",
+                    "description": "A brief explain about the candidate, highlighting key skills, experiences, and career objectives."
+                }
+            },
                 "required": ["about"],
                 "additionalProperties": False,
             },
@@ -68,15 +76,21 @@ def get_resume_enhancement_schema() -> dict:
                     "properties": {
                         "jobTitle": {"type": "string"},
                         "companyName": {"type": "string"},
+                        "location": {"type": "string"},
+                        "employmentType": {"type": "string", "enum": get_enum_values(EmploymentTypeEnum)},
                         "startEmploymentPeriod": {"type": "string"},
                         "endEmploymentPeriod": {"type": "string"},
                         "currentStatus": {"type": "boolean"},
-                        "description": {"type": "string"},
+                        "description": {
+                            "type": "string",
+                            "description": "Explain the detailed description of roles and responsibilities."
+                        },
                     },
                     "required": [
                         "jobTitle",
                         "companyName",
                         "startEmploymentPeriod",
+                        "employmentType",
                         "endEmploymentPeriod",
                         "currentStatus",
                         "description",
@@ -93,18 +107,15 @@ def get_resume_enhancement_schema() -> dict:
                         "universityName": {"type": "string"},
                         "degreeLevel": {
                             "type": "string",
-                            "enum": [
-                                "high_school",
-                                "diploma",
-                                "bachelors",
-                                "masters",
-                                "phd",
-                            ],
+                            "enum": get_enum_values(DegreeLevelEnum),
                         },
                         "startDateOfStudy": {"type": "string"},
                         "endDateOfStudy": {"type": "string"},
                         "currentStatus": {"type": "boolean"},
-                        "description": {"type": "string"},
+                        "description": {
+                            "type": "string",
+                            "description": "Explain the detailed description of the education background."
+                        },
                     },
                     "required": [
                         "fieldOfStudy",
@@ -148,12 +159,7 @@ def get_resume_enhancement_schema() -> dict:
                                 "langName": {"type": "string"},
                                 "langLevel": {
                                     "type": "string",
-                                    "enum": [
-                                        "Beginner",
-                                        "Intermediate",
-                                        "Fluent",
-                                        "Native",
-                                    ],
+                                    "enum": get_enum_values(LanguageLevelEnum),
                                 },
                             },
                             "required": ["langName", "langLevel"],
@@ -224,35 +230,19 @@ def get_resume_enhancement_schema() -> dict:
                 "properties": {
                     "gender": {
                         "type": "string",
-                        "enum": ["any", "male", "female", "other"],
+                        "enum": get_enum_values(FilterGenderEnum),
                     },
                     "education_level": {
                         "type": "string",
-                        "enum": [
-                            "any",
-                            "B.Sc.",
-                            "B.A.",
-                            "M.Sc.",
-                            "M.A.",
-                            "Ph.D.",
-                            "Associate",
-                            "Diploma",
-                        ],
+                        "enum": get_enum_values(FilterEducationLevelEnum),
                     },
                     "job_type": {
                         "type": "string",
-                        "enum": [
-                            "any",
-                            "full_time",
-                            "part_time",
-                            "contract",
-                            "internship",
-                            "remote",
-                        ],
+                        "enum": get_enum_values(JobTypeEnum),
                     },
                     "work_mode": {
                         "type": "string",
-                        "enum": ["any", "on_site", "hybrid", "remote"],
+                        "enum": get_enum_values(WorkModeEnum),
                     },
                 },
                 "required": [

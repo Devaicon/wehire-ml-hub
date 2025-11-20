@@ -134,14 +134,19 @@ class OptimizedResumeExtractor:
         pages_text = []
 
         for page_num in range(len(doc)):
+            page = doc[page_num]
             # Force plain text extraction to ensure a str is returned
-            text = doc[page_num].get_text("text")
+            text = page.get_text("text")
+
+            # Extract inner links (hyperlinks) from the page
+            links_info = self._extract_page_links(page, verbose)
+
             # OCR fallback if page is empty or has very little text
             if len(text.strip()) < 50 and ocr_method != "none":  # type: ignore
                 if verbose:
                     print(f"  🔍 OCR page {page_num + 1} ({ocr_method})...")
 
-                page_image = doc[page_num].get_pixmap(
+                page_image = page.get_pixmap(
                     dpi=150
                 )  # Higher DPI for better quality
 
@@ -155,11 +160,153 @@ class OptimizedResumeExtractor:
                     if PILLOW_AVAILABLE and vision_required:
                         text = self._extract_with_vision_fast(page_image)
 
+            # Append links information to the text
+            if links_info:
+                text += "\n\n--- PDF Hyperlinks ---\n" + links_info
+
             if text.strip():  # type: ignore
                 pages_text.append(text)
 
         doc.close()
         return pages_text
+
+    def _extract_page_links(self, page, verbose: bool = False) -> str:
+        """
+        Extract hyperlinks from a PDF page and find associated text/images below them.
+
+        Args:
+            page: PyMuPDF page object
+            verbose: Print progress
+
+        Returns:
+            Formatted string with link information
+        """
+        try:
+            links = page.get_links()
+            if not links:
+                return ""
+
+            # Get text blocks with their positions for matching
+            text_dict = page.get_text("dict")
+            link_info_list = []
+
+            for link in links:
+                # Only process URI links (external hyperlinks)
+                if link.get("kind") != fitz.LINK_URI:
+                    continue
+
+                uri = link.get("uri", "")
+                if not uri:
+                    continue
+
+                # Get link rectangle (position on page)
+                link_from = link.get("from", [])
+                if not link_from or len(link_from) < 4:
+                    continue
+
+                link_rect = fitz.Rect(link_from)
+
+                # Find text near/below the link
+                associated_text = self._find_text_near_link(text_dict, link_rect, page)
+
+                # Format link information
+                link_entry = f"Link: {uri}"
+                if associated_text:
+                    link_entry += f" | Associated text: {associated_text}"
+
+                link_info_list.append(link_entry)
+
+                if verbose:
+                    print(f"  🔗 Found link: {uri}")
+
+            return "\n".join(link_info_list) if link_info_list else ""
+
+        except Exception as e:
+            if verbose:
+                print(f"  ⚠️  Error extracting links: {e}")
+            return ""
+
+    def _find_text_near_link(self, text_dict: dict, link_rect: fitz.Rect, page) -> str:
+        """
+        Find text that is positioned below or near a link.
+
+        Args:
+            text_dict: Text dictionary from page.get_text("dict")
+            link_rect: Rectangle of the link
+            page: PyMuPDF page object
+
+        Returns:
+            Associated text string
+        """
+        associated_texts = []
+
+        try:
+            # Expand search area: check below and slightly above the link
+            # Links are often positioned just above or overlapping with their text
+            search_rect = fitz.Rect(
+                link_rect.x0 - 10,  # Slightly left
+                link_rect.y0 - 5,   # Slightly above
+                link_rect.x1 + 10,  # Slightly right
+                link_rect.y1 + 40   # Below the link (text is usually below)
+            )
+
+            # Get text within the search area
+            text_in_area = page.get_text("text", clip=search_rect).strip()
+
+            if text_in_area:
+                # Clean up the text (remove the link URL if it appears in text)
+                cleaned_text = text_in_area
+                # Remove common link prefixes if they appear
+                for prefix in ["http://", "https://", "www."]:
+                    if prefix in cleaned_text.lower():
+                        # Try to extract meaningful text before/after the URL
+                        parts = cleaned_text.split(prefix)
+                        if len(parts) > 1:
+                            # Take text before URL or first meaningful part after
+                            before_text = parts[0].strip()
+                            after_text = parts[1].split()[0][:50] if parts[1] else ""
+                            cleaned_text = before_text or after_text
+
+                if cleaned_text and len(cleaned_text) > 3:  # Only meaningful text
+                    associated_texts.append(cleaned_text[:150])  # Limit length
+
+            # Also check text blocks in the dictionary for more precise matching
+            if "blocks" in text_dict:
+                for block in text_dict["blocks"]:
+                    if "lines" not in block:
+                        continue
+
+                    for line in block["lines"]:
+                        if "spans" not in line:
+                            continue
+
+                        for span in line["spans"]:
+                            if "bbox" not in span:
+                                continue
+
+                            # Check if this text span is near the link
+                            span_bbox = span["bbox"]
+                            if len(span_bbox) < 4:
+                                continue
+
+                            span_rect = fitz.Rect(span_bbox)
+
+                            # Check if span is below the link (within reasonable distance)
+                            # Links are typically above their associated text
+                            if (span_rect.y0 >= link_rect.y0 and
+                                span_rect.y0 <= link_rect.y1 + 35 and  # Within 35 points below
+                                abs(span_rect.x0 - link_rect.x0) < 60):  # Roughly aligned horizontally
+
+                                span_text = span.get("text", "").strip()
+                                if span_text and span_text not in associated_texts:
+                                    # Filter out URLs from the text
+                                    if not any(prefix in span_text.lower() for prefix in ["http://", "https://", "www."]):
+                                        associated_texts.append(span_text[:150])
+
+            return " | ".join(associated_texts[:3]) if associated_texts else ""  # Return up to 3 matches
+
+        except Exception:
+            return ""
 
     def _extract_with_tesseract(self, page_image, verbose: bool = False) -> str:
         """Extract text using Tesseract OCR (faster than Vision API)"""
