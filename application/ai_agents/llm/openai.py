@@ -38,7 +38,6 @@ class OpenAI_LLM(LLM):
         """
         FIXED: Now properly uses structured output with JSON schema
         """
-        print(" I am in generate Json")
         response = self.client.chat.completions.create(
             model=model,
             messages=messages,

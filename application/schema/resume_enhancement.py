@@ -69,7 +69,7 @@ def get_resume_enhancement_schema() -> dict:
                 "required": ["skills"],
                 "additionalProperties": False,
             },
-            "workExperience": {  # ✅ corrected key spelling
+            "workExperience": {
                 "type": "array",
                 "items": {
                     "type": "object",
@@ -89,6 +89,7 @@ def get_resume_enhancement_schema() -> dict:
                     "required": [
                         "jobTitle",
                         "companyName",
+                        "location",
                         "startEmploymentPeriod",
                         "employmentType",
                         "endEmploymentPeriod",
@@ -197,20 +198,6 @@ def get_resume_enhancement_schema() -> dict:
                     "additionalProperties": False,
                 },
             },
-            # "preferredJobBenefits": {
-            #     "type": "array",
-            #     "items": {
-            #         "type": "object",
-            #         "properties": {
-            #             "benefits": {
-            #                 "type": "array",
-            #                 "items": {"type": "string"}
-            #             }
-            #         },
-            #         "required": ["benefits"],
-            #         "additionalProperties": False
-            #     }
-            # },
             "jobAchievements": {
                 "type": "array",
                 "items": {
@@ -276,7 +263,6 @@ def get_resume_enhancement_schema() -> dict:
             "links",
             "language",
             "jobPreferences",
-            # "preferredJobBenefits",
             "jobAchievements",
             "filters",
             "tags",

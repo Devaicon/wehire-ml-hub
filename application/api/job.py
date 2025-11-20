@@ -45,7 +45,9 @@ async def call_limited_job_matcher(payload: JobMatchDbRequest):
         resume_json = payload.resume_json
 
         process_jobs_in_batches(
-            user_id=user_id, resume_json=resume_json, batch_size=MAX_JOBS
+            user_id=user_id,
+            resume_json=resume_json,
+            batch_size=MAX_JOBS
         )
 
         return JobMatchDbResponse(status="success")
