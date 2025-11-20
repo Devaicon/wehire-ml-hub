@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 from api.services.job import generate_job_mail, resume_with_job_matcher
 from db_apis.fetch_jobs import process_jobs_in_batches
+from fastapi import Request, HTTPException
 from schema.job import (
     GenerateJobMailRequest,
     JobMailResponse,
@@ -27,9 +28,14 @@ async def call_openai_job_matcher(payload: JobMatchRequest) -> JobMatchResponse:
     summary="Generate email subject & content from CV + Job detail",
     response_model=JobMailResponse,
 )
-async def generate_job_email(request: GenerateJobMailRequest):
-    response = generate_job_mail(job_json=request.job_json, resume_json=request.resume_json)
-    return response
+async def generate_job_email(request: Request):
+    try:
+        body = await request.json()
+        object = GenerateJobMailRequest(**body)
+        response = generate_job_mail(job_json=object.job_json, resume_json=object.resume_json)
+        return response
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error generating job email: {str(e)}")
 
 
 @router.post("/match-jobs-db/")
